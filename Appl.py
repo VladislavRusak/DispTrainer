@@ -1,4 +1,5 @@
-import sys,os
+import sys
+import os
 import sqlite3
 
 class MainApplication():
