@@ -24,12 +24,23 @@ METEO = []
         ДЛЯ УДОБНОЙ НАВИГАЦИИ, КОД РАЗБИТ НА БЛОКИ ОБОЗНАЧЕНЫЕ КОММЕНАТРИЯМИ
         
         # ГЛАВНОЕ ОКНО ( НАСТРОЙКИ ГЛАВНОГО ОКНА ПРИРЛОЖЕНИЯ)
-        # КЛАССЫ ВСПОМОГАТЕЛЬНЫХ ОКОН ( ОКНА ВЫЗЫВАЕМЫЕ ИЗ ГЛАВНОГО ОКНА )
+        # КЛАССЫ НАВИГАЦИОННЫХ ОКОН ( ОКНА ВЫЗЫВАЕМЫЕ ИЗ ГЛАВНОГО ОКНА )
         # КЛАССЫ ИСПОЛНЯЕМЫХ ОКОН ( ОКНА СОДЕРЖАЩИЕ ДАННЫЕ ВЫЗЫВАЕМЫЕ ИЗ БД )
         # КЛАССЫ ВСПОМОГАЛТЕЛЬНЫХ ФУНКЦИЙ ОКОН ( ДОБАВИТЬ, УДАЛИТЬ, ИЗМЕНИТЬ ЗАПИСИ)
 
 """
-# ГЛАВНОЕ ОКНО
+
+
+#########################################################
+#                                                       #
+#                                                       #
+#                                                       #
+#                    ГЛАВНОЕ ОКНО                       #
+#                                                       #
+#                                                       #
+#                                                       #
+#########################################################
+
 
 class MainWindow(QWidget):
     mainWinSignal = pyqtSignal(str)
@@ -45,10 +56,10 @@ class MainWindow(QWidget):
         self.setLayout(self.layout)
         b1 = QPushButton('(не работает)РТК')
         b2 = QPushButton('Инфраструктура')
-        b3 = QPushButton('(не работает)Оборудование')
-        b4 = QPushButton('(не работает)Рабочие')
-        b5 = QPushButton('(не работает)Т/С')
-        b6 = QPushButton('(не работает)Грузы')
+        b3 = QPushButton('Оборудование')
+        b4 = QPushButton('Рабочие')
+        b5 = QPushButton('Т/С')
+        b6 = QPushButton('Грузы')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(b3)
@@ -57,9 +68,9 @@ class MainWindow(QWidget):
         self.layout.addWidget(b6)
         # b1.released.connect(self.openTechnologyCard)
         b2.released.connect(self.openInfrastructureWindow)
-        # b3.released.connect(self.openEquipment)
-        # b4.released.connect(self.openWorkers)
-        # b5.released.connect(self.openVehicle)
+        b3.released.connect(self.openEquipment)
+        b4.released.connect(self.openWorkers)
+        b5.released.connect(self.openVehicle)
         b6.released.connect(self.openCargo)
 
     def resizeEvent(self, event):
@@ -73,31 +84,36 @@ class MainWindow(QWidget):
         self.structF = InfrastructureWindow()
         self.structF.show()
 
-    # def openEquipment(self):
-    #     self.equipF = EquipmentForm()
-    #     self.techF.show()
-    #
-    # def openWorkers(self):
-    #     self.workF = WorkersForm()
-    #     self.workF.show()
-    #
-    # def openVehicle(self):
-    #     self.vehicleF = VehicleForm()
-    #     self.vehicleF.show()
-    #
+    def openEquipment(self):
+        self.equipF = EquipmentWindow()
+        self.equipF.show()
+
+    def openWorkers(self):
+        self.workF = WorkersWindow()
+        self.workF.show()
+
+    def openVehicle(self):
+        self.vehicleF = VehicleWindow()
+        self.vehicleF.show()
+
     def openCargo(self):
-        self.cargoF = CargoTypeForm()
+        self.cargoF = CargoWindow()
         self.cargoF.show()
 
 
-# class TechnologyCardForm(QWidget):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle('РТК')
+#########################################################
+#                                                       #
+#                                                       #
+#                                                       #
+#               КЛАССЫ НАВИГАЦИОННЫХ ОКОН               #
+#                                                       #
+#                                                       #
+#                                                       #
+#########################################################
 
-# КЛАССЫ ВСПОМОГАТЕЛЬНЫХ ОКОН
+
+# ртк класс
+
 
 class InfrastructureWindow(QWidget):
     signal = pyqtSignal(str)
@@ -130,39 +146,126 @@ class InfrastructureWindow(QWidget):
         self.storageF.show()
 
 
-# class EquipmentForm(QWidget):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle('РТК')
-#
-#
-# class WorkersForm(QWidget):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle('РТК')
-#
-#
-# class VehicleForm(QWidget):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle('РТК')
-#
-#
-# class CargoForm(QWidget):
-#     signal = pyqtSignal(str)
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle('РТК')
+class EquipmentWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Оборудование")
+        self.setMainUi()
+        self.setGeometry(300, 300, 200, 300)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        b1 = QPushButton('Краны')
+        b2 = QPushButton('Вспом.Техника')
+        self.layout.addWidget(b1)
+        self.layout.addWidget(b2)
+        b1.released.connect(self.openCransForm)
+        # b2.released.connect(self.openOtherEquipForm)
+
+    def openCransForm(self):
+        self.cransF = CranManagementForm()
+        self.cransF.show()
+
+    # def openOtherEquipForm(self):
+    #     self.equipF = OtherEquipmqntForm()
+    #     self.equipF.show()
 
 
-# КЛАССЫ ИСПОЛНЯЕМЫХ ОКОН
+
+
+
+class WorkersWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Работники')
+        self.setMainUi()
+        self.setGeometry(300, 300, 200, 300)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        b1 = QPushButton('Квалификации')
+        b2 = QPushButton('Работники')
+        self.layout.addWidget(b1)
+        self.layout.addWidget(b2)
+    #     b1.released.connect(self.openQualificationsForm)
+    #     b2.released.connect(self.openWorkersForm)
+
+    # def openQualificationsForm(self):
+    #     # self.qualificationF = QualificationsForm()
+    #     # self.qualificationF.show()
+
+    # def openWorkersForm(self):
+    #     # self.workersF = WorkersForm()
+    #     # self.workersF.show()
+
+
+class VehicleWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Транспорт')
+        self.setMainUi()
+        self.setGeometry(300, 300, 200, 300)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        b1 = QPushButton('Суда')
+        b2 = QPushButton('ЖД составы')
+        self.layout.addWidget(b1)
+        self.layout.addWidget(b2)
+        # b1.released.connect(openShipsForm)
+        # b2.released.connect(openTrainsForm)
+
+    # def openShipsForm(self):
+    #     self.shipsF = ShipsForm()
+    #     self.shipsF.show()
+
+    # def openTrainsForm(self):
+    #     self.trainsF = TrainsForm()
+    #     self.trainsF.show()
+
+class CargoWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('РТК')
+        self.setMainUi()
+        self.setGeometry(300, 300, 200, 300)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        b1 = QPushButton('Грузовая партия')
+        b2 = QPushButton('Типы грузов')
+        b3 = QPushButton('Способы хранения')
+        self.layout.addWidget(b1)
+        self.layout.addWidget(b2)
+        self.layout.addWidget(b3)
+        # b1.released.connect()
+        # b2.released.connect()
+        # b3.released.connect()
+
+
+#########################################################
+#                                                       #
+#                                                       #
+#                                                       #
+#               КЛАССЫ ИСПОЛНЯЕМЫХ ОКОН                 #
+#                                                       #
+#                                                       #
+#                                                       #
+#########################################################
+
+
 class DocCharManagementForm(QWidget):
     def __init__(self):
         super().__init__()
@@ -538,7 +641,411 @@ class CargoTypeForm(QWidget):
         self.setMainUi()
 
 
-# КЛАССЫ ВСПОМОГАТЕЛЬНЫХ ФУНКЦИЙ ОКОН
+class CranManagementForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Управление кранами")
+        self.resize(600, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        row_w = QWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(5)
+        thead = ["Номер крана", "Тип", "Обслуживаемые объекты", "  Удаление   ", "Добавление объектов"]
+        row_w_l = QBoxLayout(QBoxLayout.LeftToRight)
+        row_w.setLayout(row_w_l)
+        col_num = 0
+        for val in thead:
+            row_w_l.addWidget(QLabel(val))
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        # self.layout.addWidget(row_w)
+        row_num = 0
+        crans = Cran()
+        for i in crans.getAllGroupBy():
+            row_w = QWidget()
+            row_w_l = QBoxLayout(QBoxLayout.LeftToRight)
+            row_w.setLayout(row_w_l)
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            self.table.setItem(row_num, 0, QTableWidgetItem(str(i[1])))
+            row_w_l.addWidget(QLabel(str(i[1])))
+            cran_type = CranType()
+            ct = cran_type.find(i[2])
+            row_w_l.addWidget(QLabel(str(ct[0][1])))
+            self.table.setItem(row_num, 1, QTableWidgetItem(str(ct[0][1])))
+            col_num = 0
+            # for j in i:
+            # self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+            # col_num += 1
+
+            cr = crans.findBy('num', '=', str(i[1]))
+            cor_3_wgt = QWidget()
+            cor_l = QFormLayout()
+            cor_3_wgt.setLayout(cor_l)
+            for row in cr:
+                if row[3] != '':
+                    name = ""
+                    if int(row[3]) == 1:
+                        s = Storage()
+                        tmp = s.find(str(row[4]))
+                        name = tmp[0][1]
+                    if int(row[3]) == 2:
+                        name = "Причал №" + str(row[4])
+                    if int(row[3]) == 3:
+                        name = "Путь №" + str(i[4])
+                    name = str(name)
+                    s = str(row[0])
+                    p = MyButton('Удалить', None, s)
+                    p.s.connect(self.delObjectConfirm)
+                    cor_l.addRow(QLabel(name), p)
+
+            # row_w_l.addWidget(cor_3_wgt)
+            cor_3_wgt.resize(100, 100)
+            self.table.setCellWidget(row_num, 2, cor_3_wgt)
+
+            w = QWidget()
+            s = str(i[1])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.delConfirm)
+            w.resize(120, 30)
+            self.table.setCellWidget(row_num, 3, w)
+            w = QWidget()
+            s = str(i[1])
+            p = MyButton('Добавить объект', w, s)
+            p.s.connect(self.addObjectToCran)
+            w.resize(130, 30)
+            self.table.setCellWidget(row_num, 4, w)
+            # row_w_l.addWidget(cor_3_wgt)
+            # self.layout.addWidget(row_w)
+            # w = QWidget()
+            # s = str(i[0])
+            # p = SaveRowButton('Сохранить', w, s, str(row_num), (col_num - 2))
+            # p.s.connect(self.save_W)
+            # self.table.setCellWidget(row_num, col_num, w)
+
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setDefaultSectionSize(40)
+        self.table.horizontalHeader().setDefaultSectionSize(130)
+        self.layout.addWidget(self.table)
+
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить кран')
+        l.addWidget(add_b)
+        add_b.released.connect(self.addCranFormFunc)
+
+        return False
+
+    def addObjectToCran(self, val):
+        self.cran_num = val
+        w = QWidget()
+        w.setWindowTitle("Добавить объект")
+        w.l = QGridLayout()
+        w.setLayout(w.l)
+        w.type = QComboBox()
+        w.type.addItem("Склад", 1)
+        w.type.addItem("Причал", 2)
+        w.type.addItem("Путь", 3)
+        w.type.currentIndexChanged.connect(self.getObjectsByType)
+
+        w.l.addWidget(QLabel("Тип объекта"), 0, 0)
+        w.l.addWidget(w.type, 0, 1)
+
+        self.addObjectToCranForm = w
+        self.addObjectToCranForm.show()
+
+        objects = QComboBox()
+
+        self.addObjectToCranForm.objects = objects
+        self.addObjectToCranForm.l.addWidget(QLabel("Объект"), 1, 0)
+        self.addObjectToCranForm.l.addWidget(objects, 1, 1)
+        self.addObjectToCranForm.add_b = QPushButton("Добавить")
+        self.addObjectToCranForm.add_b.released.connect(self.addObjectToCranDo)
+        self.addObjectToCranForm.l.addWidget(self.addObjectToCranForm.add_b)
+
+        self.getObjectsByType(1)
+
+    def addObjectToCranDo(self):
+        if not hasattr(self.addObjectToCranForm, 'objects'):
+            QMessageBox.about(self, 'Ошибка!', "Добавьте объект")
+            return False
+
+        cr = Cran()
+        c = cr.findBy('num', '=', str(self.cran_num))
+        cran = Cran(None, str(self.cran_num), str(c[0][2]), str(self.addObjectToCranForm.type.currentData()),
+                    str(self.addObjectToCranForm.objects.currentData()))
+        cran.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+        self.addObjectToCranForm.close()
+
+    def getObjectsByType(self, type=None):
+        type = self.addObjectToCranForm.type.currentData()
+        obs = []
+        if type == 1:
+            s = Storage()
+            obs = s.getAll()
+        if type == 2:
+            d = DocChar()
+            tmp = d.getAll()
+            for i in tmp:
+                obs.append((i[1], "Причал №" + str(i[1])))
+        if type == 3:
+            r = Railway()
+            tmp = r.getAll()
+            for i in tmp:
+                obs.append((i[0], "Путь №" + str(i[1])))
+
+        self.addObjectToCranForm.objects.clear()
+        for ob in obs:
+            self.addObjectToCranForm.objects.addItem(str(ob[1]), ob[0])
+
+    def addCranFormFunc(self):
+        w = QWidget()
+        w.setWindowTitle("Добавление крана")
+        w.resize(400, 400)
+        w.l = QFormLayout()
+        w.setLayout(w.l)
+        w.num = QLineEdit()
+        w.l.addRow(QLabel('Номер крана'), w.num)
+        w.type = QComboBox()
+        cranType = CranType()
+        c = cranType.getAll()
+        for i in c:
+            w.type.addItem(i[1], i[0])
+
+        w.l.addRow(QLabel('Тип крана'), w.type)
+        btn = QPushButton('Добавить!')
+        btn.released.connect(self.doAddCran)
+        w.l.addWidget(btn)
+        btn = QPushButton('Добавить тип крана')
+        btn.released.connect(self.openAddCranTypeForm)
+        w.l.addWidget(btn)
+        w.l.addWidget(QLabel('Типы кранов'))
+        cran_type = CranType()
+        ct = cran_type.getAll()
+        for i in ct:
+            buttons_w = QWidget()
+            lay = QBoxLayout(QBoxLayout.LeftToRight)
+            buttons_w.setLayout(lay)
+
+            s = str(i[0])
+            p = MyButton('Просмотр', None, s)
+            p.s.connect(self.editCranType)
+            lay.addWidget(p)
+            p = MyButton('Удалить', None, s)
+            p.s.connect(self.delCranTypeConfirm)
+            lay.addWidget(p)
+            w.l.addRow(QLabel(i[1]), buttons_w)
+        self.addCranForm = w
+        self.addCranForm.show()
+
+    def editCranType(self, val):
+        cr = CranType()
+        c = cr.find(val)
+        self.edit_cran_id = val
+        w = QWidget()
+        w.setWindowTitle("Добавление типа крана")
+        w.resize(600, 350)
+        w.l = QFormLayout()
+        w.setLayout(w.l)
+        w.val1 = QLineEdit()
+        w.val1.setText(str(c[0][1]))
+        w.l.addRow(QLabel('Название'), w.val1)
+        w.val2 = QLineEdit()
+        w.val2.setText(str(c[0][2]))
+        w.l.addRow(QLabel('Производительность при работе с кучи т/смена (уголь)'), w.val2)
+        w.val3 = QLineEdit()
+        w.val3.setText(str(c[0][3]))
+        w.l.addRow(QLabel('Производительность при работе с кучи т/смена (Чугун, брикеты)'), w.val3)
+        w.val4 = QLineEdit()
+        w.val4.setText(str(c[0][4]))
+        w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (уголь)'), w.val4)
+        w.val5 = QLineEdit()
+        w.val5.setText(str(c[0][5]))
+        w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (Чугун, брикеты)'), w.val5)
+        w.val6 = QLineEdit()
+        w.val6.setText(str(c[0][6]))
+        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (уголь)'), w.val6)
+        w.val7 = QLineEdit()
+        w.val7.setText(str(c[0][7]))
+        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (Чугун, брикеты)'),
+                   w.val7)
+        btn = QPushButton('Сохранить')
+        btn.released.connect(self.editCranTypeDo)
+        w.l.addWidget(btn)
+        self.editCranTypeForm = w
+        self.editCranTypeForm.show()
+
+    def editCranTypeDo(self):
+        cran = CranType(self.edit_cran_id, self.editCranTypeForm.val1.text(), self.editCranTypeForm.val2.text(),
+                        self.editCranTypeForm.val3.text(), self.editCranTypeForm.val4.text(),
+                        self.editCranTypeForm.val5.text(), self.editCranTypeForm.val6.text(),
+                        self.editCranTypeForm.val7.text())
+        cran.save()
+        self.editCranTypeForm.close()
+
+    def delCranTypeConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.delCranType)
+
+    def delCranType(self):
+        cran_type = CranType()
+        cran_type.delete(self.delete_id)
+        self.addCranForm.close()
+        self.addCranFormFunc()
+
+    def doAddCran(self):
+        crans = Cran(None, self.addCranForm.num.text(), str(self.addCranForm.type.currentData()), "", "")
+        crans.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+        self.addCranForm.close()
+
+    def delObjectConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.deleteObject)
+
+    def deleteObject(self, val):
+        cran = Cran()
+        cran.delete(self.delete_id)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def delConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.mk)
+
+    def openAddCranTypeForm(self):
+        w = QWidget()
+        w.setWindowTitle("Добавление типа крана")
+        w.resize(600, 350)
+        w.l = QFormLayout()
+        w.setLayout(w.l)
+        w.val1 = QLineEdit()
+        w.l.addRow(QLabel('Название'), w.val1)
+        w.val2 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с кучи т/смена (уголь)'), w.val2)
+        w.val3 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с кучи т/смена (Чугун, брикеты)'), w.val3)
+        w.val4 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (уголь)'), w.val4)
+        w.val5 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (Чугун, брикеты)'), w.val5)
+        w.val6 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (уголь)'), w.val6)
+        w.val7 = QLineEdit()
+        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (Чугун, брикеты)'),
+                   w.val7)
+        btn = QPushButton('Добавить')
+        btn.released.connect(self.addCranType)
+        w.l.addWidget(btn)
+        self.addCranTypeForm = w
+        self.addCranTypeForm.show()
+
+    def addCranType(self):
+        c = CranType(None, self.addCranTypeForm.val1.text(), self.addCranTypeForm.val2.text(),
+                     self.addCranTypeForm.val3.text(), self.addCranTypeForm.val4.text(),
+                     self.addCranTypeForm.val5.text(), self.addCranTypeForm.val6.text(),
+                     self.addCranTypeForm.val7.text())
+        c.save()
+        self.addCranTypeForm.close()
+
+    def mk(self, val):
+        cran = Cran()
+        cran.deleteByNum(self.delete_id)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+
+#########################################################
+#                                                       #
+#                                                       #
+#                                                       #
+#         КЛАССЫ ВСПОМОГАТЕЛЬНЫХ ФУНКЦИЙ ОКОН           #
+#                                                       #
+#                                                       #
+#                                                       #
+#########################################################
+
+
+class MyMplCanvas(FigureCanvas):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        # pass
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+
+        self.compute_initial_figure()
+
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def compute_initial_figure(self):
+        pass
+
+
+class MyStaticMplCanvas(MyMplCanvas):
+    def __init__(self, parent=None, data=None):
+        # pass
+        self.data = data
+        super().__init__(parent, width=5, height=4, dpi=100)
+
+    def compute_initial_figure(self, data=None):
+        # pass
+        for row in self.data:
+
+            dates = [dt.datetime.fromtimestamp(ts) for ts in row[0]]
+            xfmt = md.DateFormatter('%Y-%m-%d %H:%M')
+            self.axes.xaxis.set_major_formatter(xfmt)
+            self.axes.plot(dates, row[1], row[2], label=row[3])
+            self.axes.legend()
+            for label in self.axes.get_xmajorticklabels():
+                label.set_rotation(20)
+        # self.axes.hist([10,20], 5, normed=1, facecolor='g', alpha=0.75)
+
+
+class GraphWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self, data=None):
+        super().__init__()
+        self.data = data
+        self.setMainUi()
+        self.resize(700, 500)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        sc = MyStaticMplCanvas(self, self.data)
+        self.layout.addWidget(sc)
+
+
 class MyButton(QPushButton):
     s = pyqtSignal(str)
 
