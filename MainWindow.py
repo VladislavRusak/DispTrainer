@@ -14,10 +14,6 @@ import matplotlib.dates as md
 import datetime as dt
 
 
-# sys.path.insert(0, "C:\\WinPython\\python-3.5.3\\newproj\\include")
-# sys.path.insert(0, "C:\\WinPython\\python-3.5.3\\Lib\\site-packages")
-# sys.path.insert(0, "C:\\WinPython\\python-3.5.3\\DLLs")
-
 from ClassThread import ReportsThread, ReportThread
 from ContentManagement import *
 
@@ -537,10 +533,10 @@ class StorageManagementForm(QWidget):
         QWidget.closeEvent(self, evt)
         self.signal.emit("1")
         
-        
 
 class CargoManagementForm(QWidget):
     signal = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Типы груза")
@@ -608,7 +604,7 @@ class StorageCapManagementForm(QWidget):
         self.setMainUi()
         self.resize(500, 500)
         self.changed = False
-        
+
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(self.layout)
@@ -623,7 +619,7 @@ class StorageCapManagementForm(QWidget):
             types.append(c[0])
             self.table.setItem(0, col_num, QTableWidgetItem("Вместимость (" + str(c[1]) + ")"))
             col_num += 1
-            
+
         row_num = 1
         for r in storages.getAll():
             self.table.setRowCount(row_num + 1)
@@ -639,13 +635,13 @@ class StorageCapManagementForm(QWidget):
             w = QWidget()
             p = SaveRowButton('Сохранить', w, sdf_id, str(r[0]), row_num)
             p.s.connect(self.saveStorageCap)
-            self.table.setCellWidget(row_num, col_num, w) 
+            self.table.setCellWidget(row_num, col_num, w)
             row_num += 1
-            
+
         self.types = types
-        self.layout.addWidget(self.table)    
+        self.layout.addWidget(self.table)
         self.table.itemChanged.connect(self.valueChanged)
-        
+
         w = QWidget()
         l = QHBoxLayout()
         w.setLayout(l)
@@ -653,9 +649,9 @@ class StorageCapManagementForm(QWidget):
         add_b = QPushButton('Добавить склад')
         l.addWidget(add_b)
         add_b.released.connect(self.openStorageAddWindow)
-        
+
         return False
-    
+
     def saveStorageCap(self, id, storage_id, row):
         for x in range(1, 4):
             if self.table.item(row,x) != None:
@@ -667,42 +663,42 @@ class StorageCapManagementForm(QWidget):
                 else:
                     StorageDef = StorageDefVal(None, str(storage_id), str(self.types[(x-1)]), '0', self.table.item(row,x).text())
                     StorageDef.save()
-                    
+
         self.changed = False
-                
-     
+
+
     def valueChanged(self, item):
         self.changed = True
-    
+
     def clos(self):
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
-    
+
     def openStorageAddWindow(self):
         self.storage = StorageManagementForm()
         self.storage.show()
         self.storage.signal.connect(self.clos)
-    
+
     def addStorageCap(self):
         storage_cap = StorageCap(0,str(self.storage.itemData(self.storage.currentIndex())),self.coal.text(),self.pellet.text(),self.iron.text())
         storage_cap.save()
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
-        
+
     def mk(self, val):
         storage_cap = StorageCap()
         storage_cap.delete(val)
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
-        
+
     def cls(self, val):
         if val == 1:
             self.changed = False
             self.close()
-        
+
     def closeEvent(self, evt):
         if self.changed:
             self.sup = SupportWindow("Действительно хотите закрыть?", 1)
@@ -720,10 +716,10 @@ class SaveRowButton(QPushButton):
         self.id = id
         self.st_id = st_id
         self.row = row
-        
+
     def mouseReleaseEvent(self, e):
         QPushButton.mouseReleaseEvent(self, e)
-        self.s.emit(self.id, self.st_id, self.row) 
+        self.s.emit(self.id, self.st_id, self.row)
         
         
 

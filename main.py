@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import QApplication
-from MainWindow import *
+from NewMainWindow import *
 
 import sys
 
