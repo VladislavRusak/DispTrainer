@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.dates as md
 import datetime as dt
+# import time
 
 
 from ClassThread import ReportsThread, ReportThread
@@ -45,11 +46,12 @@ METEO = []
 class MainWindow(QWidget):
     mainWinSignal = pyqtSignal(str)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super(MainWindow, self).__init__()
         self.setWindowTitle("Логистика")
         self.setMainUi()
-        self.setGeometry(300, 300, 200, 300)
+        self.setGeometry(300, 300, 300, 350)    # left/top/width/height
+        self.parent = parent
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
@@ -83,22 +85,28 @@ class MainWindow(QWidget):
     def openInfrastructureWindow(self):
         self.structF = InfrastructureWindow()
         self.structF.show()
+        self.hide()
+
 
     def openEquipment(self):
         self.equipF = EquipmentWindow()
         self.equipF.show()
+        self.hide()
 
     def openWorkers(self):
         self.workF = WorkersWindow()
         self.workF.show()
+        self.hide()
 
     def openVehicle(self):
         self.vehicleF = VehicleWindow()
         self.vehicleF.show()
+        self.hide()
 
     def openCargo(self):
         self.cargoF = CargoWindow()
         self.cargoF.show()
+        self.hide()
 
 
 #########################################################
@@ -118,24 +126,28 @@ class MainWindow(QWidget):
 class InfrastructureWindow(QWidget):
     signal = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, window=None):
         super().__init__()
         self.setWindowTitle('Инфраструктура')
         self.setMainUi()
         self.setGeometry(300, 300, 200, 300)
+        self.window = window
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(self.layout)
-        b1 = QPushButton('Причалы')
-        b2 = QPushButton('Склады')
-        b3 = QPushButton('---Ж/Д пути---')
+        b1 = QPushButton(' Причалы ')
+        b2 = QPushButton(' Склады ')
+        b3 = QPushButton(' ---Ж/Д пути--- ')
+        back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(b3)
+        self.layout.addWidget(back)
         b1.released.connect(self.openDocCharManagementForm)
         b2.released.connect(self.openStorageCapManagmentForm)
         # b3.released.connect(self.DocCharManagementForm)
+        back.released.connect(self.GoBack)
 
     def openDocCharManagementForm(self):
         self.docF = DocCharManagementForm()
@@ -145,25 +157,35 @@ class InfrastructureWindow(QWidget):
         self.storageF = StorageCapManagementForm()
         self.storageF.show()
 
+    def GoBack(self):
+        self.Back = MainWindow()
+        self.hide()
+        self.Back.show()
+
+
 
 class EquipmentWindow(QWidget):
     signal = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, window=None):
         super().__init__()
         self.setWindowTitle("Оборудование")
         self.setMainUi()
         self.setGeometry(300, 300, 200, 300)
+        self.window = window
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(self.layout)
         b1 = QPushButton('Краны')
         b2 = QPushButton('Вспом.Техника')
+        back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
+        self.layout.addWidget(back)
         b1.released.connect(self.openCransForm)
         # b2.released.connect(self.openOtherEquipForm)
+        back.released.connect(self.GoBack)
 
     def openCransForm(self):
         self.cransF = CranManagementForm()
@@ -173,28 +195,35 @@ class EquipmentWindow(QWidget):
     #     self.equipF = OtherEquipmqntForm()
     #     self.equipF.show()
 
-
-
+    def GoBack(self):
+        self.Back = MainWindow()
+        self.hide()
+        self.Back.show()
 
 
 class WorkersWindow(QWidget):
     signal = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, window=None):
         super().__init__()
         self.setWindowTitle('Работники')
         self.setMainUi()
         self.setGeometry(300, 300, 200, 300)
+        self.window = window
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(self.layout)
         b1 = QPushButton('Квалификации')
         b2 = QPushButton('Работники')
+        back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
+        self.layout.addWidget(back)
     #     b1.released.connect(self.openQualificationsForm)
     #     b2.released.connect(self.openWorkersForm)
+        back.released.connect(self.GoBack)
+
 
     # def openQualificationsForm(self):
     #     # self.qualificationF = QualificationsForm()
@@ -204,25 +233,33 @@ class WorkersWindow(QWidget):
     #     # self.workersF = WorkersForm()
     #     # self.workersF.show()
 
+    def GoBack(self):
+        self.Back = MainWindow()
+        self.hide()
+        self.Back.show()
 
 class VehicleWindow(QWidget):
     signal = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, window=None):
         super().__init__()
         self.setWindowTitle('Транспорт')
         self.setMainUi()
         self.setGeometry(300, 300, 200, 300)
+        self.window = window
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(self.layout)
         b1 = QPushButton('Суда')
         b2 = QPushButton('ЖД составы')
+        back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
+        self.layout.addWidget(back)
         # b1.released.connect(openShipsForm)
         # b2.released.connect(openTrainsForm)
+        back.released.connect(self.GoBack)
 
     # def openShipsForm(self):
     #     self.shipsF = ShipsForm()
@@ -232,14 +269,20 @@ class VehicleWindow(QWidget):
     #     self.trainsF = TrainsForm()
     #     self.trainsF.show()
 
+    def GoBack(self):
+        self.Back = MainWindow()
+        self.hide()
+        self.Back.show()
+
 class CargoWindow(QWidget):
     signal = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, window=None):
         super().__init__()
-        self.setWindowTitle('РТК')
+        self.setWindowTitle('Грузы')
         self.setMainUi()
         self.setGeometry(300, 300, 200, 300)
+        self.window = window
 
     def setMainUi(self):
         self.layout = QBoxLayout(QBoxLayout.TopToBottom)
@@ -247,12 +290,24 @@ class CargoWindow(QWidget):
         b1 = QPushButton('Грузовая партия')
         b2 = QPushButton('Типы грузов')
         b3 = QPushButton('Способы хранения')
+        back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(b3)
+        self.layout.addWidget(back)
         # b1.released.connect()
-        # b2.released.connect()
+        b2.released.connect(self.openCargoType)
         # b3.released.connect()
+        back.released.connect(self.GoBack)
+
+    def openCargoType(self):
+        self.type = CargoTypeForm()
+        self.type.show()
+
+    def GoBack(self):
+        self.Back = MainWindow()
+        self.hide()
+        self.Back.show()
 
 
 #########################################################

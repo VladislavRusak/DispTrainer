@@ -554,6 +554,7 @@ class CranType():
 
 
 class Cran():
+
     def __init__(self, id=None, num=None, cran_type=None, type=None, object_id=None):
         # type 1 - склад 2 - причал 3 - Ж/Д
         self.id = id
