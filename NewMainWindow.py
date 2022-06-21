@@ -184,16 +184,16 @@ class EquipmentWindow(QWidget):
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
         b1.released.connect(self.openCransForm)
-        # b2.released.connect(self.openOtherEquipForm)
+        b2.released.connect(self.openOtherEquipForm)
         back.released.connect(self.GoBack)
 
     def openCransForm(self):
         self.cransF = CranManagementForm()
         self.cransF.show()
 
-    # def openOtherEquipForm(self):
-    #     self.equipF = OtherEquipmqntForm()
-    #     self.equipF.show()
+    def openOtherEquipForm(self):
+        self.equipF = OtherEquipmentForm()
+        self.equipF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
@@ -295,10 +295,15 @@ class CargoWindow(QWidget):
         self.layout.addWidget(b2)
         self.layout.addWidget(b3)
         self.layout.addWidget(back)
-        # b1.released.connect()
+        b1.released.connect(self.openCargoPartyType)
         b2.released.connect(self.openCargoType)
         # b3.released.connect()
         back.released.connect(self.GoBack)
+
+    def openCargoPartyType(self):
+        self.type = CargoPartyWindow()
+        self.type.show()
+        self.hide()
 
     def openCargoType(self):
         self.type = CargoTypeForm()
@@ -308,6 +313,43 @@ class CargoWindow(QWidget):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
+class CargoPartyWindow(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self, window=None):
+        super().__init__()
+        self.setWindowTitle('Грузовая партия')
+        self.setMainUi()
+        self.setGeometry(300, 300, 200, 300)
+        self.window = window
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        b1 = QPushButton('Партия')
+        b2 = QPushButton('Экспедиторы')
+        back = QPushButton(' << Назад ')
+        self.layout.addWidget(b1)
+        self.layout.addWidget(b2)
+        self.layout.addWidget(back)
+        # b1.released.connect(self.openPartyType)
+        # b2.released.connect(self.openForwardersType)
+        back.released.connect(self.GoBack)
+
+#    def openPartyType(self):
+#        self.type = название()
+#        self.type.show()
+#
+#    def openForwardersType(self):
+#        self.type = название()
+#        self.type.show()
+
+    def GoBack(self):
+        self.Back = CargoWindow()
+        self.hide()
+        self.Back.show()
+
 
 
 #########################################################
@@ -660,7 +702,7 @@ class CargoTypeForm(QWidget):
             for j in i:
                 self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
                 col_num += 1
-            w = QWidget
+            w = QWidget()
             s = str(i[0])
             p = MyButton('Удалить', w, s)
             p.s.connect(self.mk)
@@ -669,7 +711,7 @@ class CargoTypeForm(QWidget):
         self.layout.addWidget(self.table)
         w = QWidget()
         l = QHBoxLayout()
-        w.layout(l)
+        w.setLayout(l)
         self.layout.addWidget(w)
         add_b = QPushButton('Добавить значение')
         self.type = QLineEdit()
@@ -684,13 +726,13 @@ class CargoTypeForm(QWidget):
             return False
         cargo = Cargo(0, self.type.text())
         cargo.save()
-        qw = QWidget
+        qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
 
-    def mk(self, value):
+    def mk(self, val):
         cargo = Cargo()
-        cargo.delete(value)
+        cargo.delete(val)
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
