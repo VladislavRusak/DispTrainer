@@ -495,6 +495,74 @@ class DocCharManagementForm(QWidget):
             self.setMainUi()
 
 
+class StorageManagementForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Склады")
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        storage = Storage()
+        # t.save()
+        self.data = storage.getAll()
+        row_num = -1
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            # p.s.connect(self.mk)
+            # p.released.connect()
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.type = QLineEdit()
+        l.addWidget(self.type)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addStorage)
+
+    def addStorage(self):
+        if self.type.text() == '':
+            self.sup = SupportWindow("Заполните название", 0)
+            self.sup.show()
+            return False
+        storage = Storage(0, self.type.text())
+        storage.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        storage = Storage()
+        storage.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def closeEvent(self, evt):
+        QWidget.closeEvent(self, evt)
+        self.signal.emit("1")
+
+
 class StorageCapManagementForm(QWidget):
     def __init__(self):
         super().__init__()
@@ -609,133 +677,7 @@ class StorageCapManagementForm(QWidget):
             QWidget.closeEvent(self, evt)
 
 
-class StorageManagementForm(QWidget):
-    signal = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Склады")
-        self.resize(400, 400)
-        self.setMainUi()
-
-    def setMainUi(self):
-        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
-        self.setLayout(self.layout)
-        self.table = QTableWidget()
-        self.table.setRowCount(1)
-        self.table.setColumnCount(3)
-        storage = Storage()
-        # t.save()
-        self.data = storage.getAll()
-        row_num = -1
-        for i in self.data:
-            row_num += 1
-            self.table.setRowCount((row_num + 1))
-            col_num = 0
-            for j in i:
-                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
-                col_num += 1
-            w = QWidget()
-            s = str(i[0])
-            p = MyButton('Удалить', w, s)
-            p.s.connect(self.mk)
-            # p.s.connect(self.mk)
-            # p.released.connect()
-            self.table.setCellWidget(row_num, col_num, w)
-
-        self.layout.addWidget(self.table)
-        w = QWidget()
-        l = QHBoxLayout()
-        w.setLayout(l)
-        self.layout.addWidget(w)
-        add_b = QPushButton('Добавить значение')
-        self.type = QLineEdit()
-        l.addWidget(self.type)
-        l.addWidget(add_b)
-        add_b.released.connect(self.addStorage)
-
-    def addStorage(self):
-        if self.type.text() == '':
-            self.sup = SupportWindow("Заполните название", 0)
-            self.sup.show()
-            return False
-        storage = Storage(0, self.type.text())
-        storage.save()
-        qw = QWidget()
-        qw.setLayout(self.layout)
-        self.setMainUi()
-
-    def mk(self, val):
-        storage = Storage()
-        storage.delete(val)
-        qw = QWidget()
-        qw.setLayout(self.layout)
-        self.setMainUi()
-
-    def closeEvent(self, evt):
-        QWidget.closeEvent(self, evt)
-        self.signal.emit("1")
-
-
-class CargoTypeForm(QWidget):
-    signal = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle('Типы груза')
-        self.resize(400, 400)
-        self.setMainUi()
-
-    def setMainUi(self):
-        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
-        self.setLayout(self.layout)
-        self.table = QTableWidget()
-        self.table.setRowCount(1)
-        self.table.setColumnCount(3)
-        cargo = Cargo()
-        self.data = cargo.getAll()
-        row_num = -1
-        for i in self.data:
-            row_num += 1
-            self.table.setRowCount((row_num + 1))
-            col_num = 0
-            for j in i:
-                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
-                col_num += 1
-            w = QWidget()
-            s = str(i[0])
-            p = MyButton('Удалить', w, s)
-            p.s.connect(self.mk)
-            self.table.setCellWidget(row_num, col_num, w)
-
-        self.layout.addWidget(self.table)
-        w = QWidget()
-        l = QHBoxLayout()
-        w.setLayout(l)
-        self.layout.addWidget(w)
-        add_b = QPushButton('Добавить значение')
-        self.type = QLineEdit()
-        l.addWidget(self.type)
-        l.addWidget(add_b)
-        add_b.released.connect(self.addCargo)
-
-    def addCargo(self):
-        if self.type.text() == '':
-            self.sup = SupportWindow('Заполните название', 0)
-            self.sup.show()
-            return False
-        cargo = Cargo(0, self.type.text())
-        cargo.save()
-        qw = QWidget()
-        qw.setLayout(self.layout)
-        self.setMainUi()
-
-    def mk(self, val):
-        cargo = Cargo()
-        cargo.delete(val)
-        qw = QWidget()
-        qw.setLayout(self.layout)
-        self.setMainUi()
+#жд пути
 
 
 class CranManagementForm(QWidget):
@@ -1074,6 +1016,130 @@ class CranManagementForm(QWidget):
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
+
+
+class OtherEquipmentForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Вспомогательная техника')
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        otherequipment = OtherEquipment()
+        self.data = otherequipment.getAll()
+        row_num = -1
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.type = QLineEdit()
+        l.addWidget(self.type)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addCargo)
+
+    def addCargo(self):
+        if self.type.text() == '':
+            self.sup = SupportWindow('Заполните название', 0)
+            self.sup.show()
+            return False
+        otherequipment = OtherEquipment(0, self.type.text())
+        otherequipment.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        otherequipment = OtherEquipment()
+        otherequipment.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+
+class CargoTypeForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Типы груза')
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        cargo = Cargo()
+        self.data = cargo.getAll()
+        row_num = -1
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.type = QLineEdit()
+        l.addWidget(self.type)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addCargo)
+
+    def addCargo(self):
+        if self.type.text() == '':
+            self.sup = SupportWindow('Заполните название', 0)
+            self.sup.show()
+            return False
+        cargo = Cargo(0, self.type.text())
+        cargo.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        cargo = Cargo()
+        cargo.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+
 
 
 #########################################################

@@ -15,7 +15,7 @@ class Meteo:
         self.precipitation = precipitation
 
 
-class Cargo:
+class Cargo():
     def __init__(self, id=None, type=None):
         self.id = id
         self.type = type
@@ -40,6 +40,36 @@ class Cargo:
         c = db_connection.cursor()
         c.execute("""
         SELECT * from cargo_types
+        """)
+        res = c.fetchall()
+        return res
+
+
+class OtherEquipment():
+    def __init__(self, id=None, type=None):
+        self.id = id
+        self.type = type
+
+    def save(self):
+        c = db_connection.cursor()
+        c.execute("insert into other_tech_model (name) VALUES('" + self.type + "')")
+        db_connection.commit()
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM other_tech_model WHERE model_id = " + id + " ")
+        db_connection.commit()
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from other_tech_model where model_id=:id", {"id": id})
+        res = c.fetchall()
+        return res
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT * from other_tech_model
         """)
         res = c.fetchall()
         return res
