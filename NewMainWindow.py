@@ -220,14 +220,13 @@ class WorkersWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-    #     b1.released.connect(self.openQualificationsForm)
-    #     b2.released.connect(self.openWorkersForm)
-        back.released.connect(self.GoBack)
+        b1.released.connect(self.openQualificationsForm)
+        # b2.released.connect(self.openWorkersForm)
+        # back.released.connect(self.GoBack)
 
-
-    # def openQualificationsForm(self):
-    #     # self.qualificationF = QualificationsForm()
-    #     # self.qualificationF.show()
+    def openQualificationsForm(self):
+        self.qualificationF = QualificationsForm()
+        self.qualificationF.show()
 
     # def openWorkersForm(self):
     #     # self.workersF = WorkersForm()
@@ -237,6 +236,7 @@ class WorkersWindow(QWidget):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
 
 class VehicleWindow(QWidget):
     signal = pyqtSignal(str)
@@ -273,6 +273,7 @@ class VehicleWindow(QWidget):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
 
 class CargoWindow(QWidget):
     signal = pyqtSignal(str)
@@ -1032,6 +1033,31 @@ class CranManagementForm(QWidget):
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
+
+
+class QualificationsForm(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Список квалификаций')
+        self.setMainUi()
+        self.setGeometry(300, 300, 600, 400)
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        tab_lo = QBoxLayout(QBoxLayout.LeftToRight)
+        self.layout.insertLayout(1, tab_lo)
+        self.top_table = QTableWidget()
+        self.top_table.setRowCount(1)
+        self.top_table.setColumnCount(2)
+        thead = ["Идентификатор", "Название навыка"]
+        col_num = 0
+        for val in thead:
+            self.top_table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+
 
 
 #########################################################
