@@ -138,7 +138,7 @@ class InfrastructureWindow(QWidget):
         self.setLayout(self.layout)
         b1 = QPushButton(' Причалы ')
         b2 = QPushButton(' Склады ')
-        b3 = QPushButton(' ---Ж/Д пути--- ')
+        b3 = QPushButton(' Ж/Д пути ')
         back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
@@ -839,6 +839,7 @@ class TrainsForm(QWidget):
         self.delete_id = val
         self.sup.signal.connect(self.delTrain)
 
+
 class CranManagementForm(QWidget):
     signal = pyqtSignal(str)
 
@@ -893,7 +894,7 @@ class CranManagementForm(QWidget):
                     name = ""
                     if int(row[3]) == 1:
                         s = Storage()
-                        tmp = s.find(str(row[4]))
+                        tmp = s.find(str(row[3]))
                         name = tmp[0][1]
                     if int(row[3]) == 2:
                         name = "Причал №" + str(row[4])
