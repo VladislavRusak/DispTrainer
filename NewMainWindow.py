@@ -146,7 +146,7 @@ class InfrastructureWindow(QWidget):
         self.layout.addWidget(back)
         b1.released.connect(self.openDocCharManagementForm)
         b2.released.connect(self.openStorageCapManagmentForm)
-        # b3.released.connect(self.DocCharManagementForm)
+        b3.released.connect(self.openTrainsForm)
         back.released.connect(self.GoBack)
 
     def openDocCharManagementForm(self):
@@ -156,6 +156,10 @@ class InfrastructureWindow(QWidget):
     def openStorageCapManagmentForm(self):
         self.storageF = StorageCapManagementForm()
         self.storageF.show()
+
+    def openTrainsForm(self):
+        self.trainF = TrainsForm()
+        self.trainF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
@@ -226,8 +230,8 @@ class WorkersWindow(QWidget):
 
 
     # def openQualificationsForm(self):
-    #     # self.qualificationF = QualificationsForm()
-    #     # self.qualificationF.show()
+        # self.qualificationF = QualificationsForm()
+        # self.qualificationF.show()
 
     # def openWorkersForm(self):
     #     # self.workersF = WorkersForm()
@@ -677,8 +681,163 @@ class StorageCapManagementForm(QWidget):
             QWidget.closeEvent(self, evt)
 
 
-#жд пути
+class TrainsForm(QWidget):
+    signal = pyqtSignal(str)
 
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('ЖД пути')
+        self.resize(600, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(9)
+        thead = ["ID", "№ состава", "Экспедитор", "дата и время подхода состава", "Вид груза", "Количество вагонов", "Только прямой вариант (вагон - судно)", "Путь"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        trains = Train()
+        trains = trains.getAll()
+        row_num = 0
+        for i in trains:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            iter = 0
+            for j in i:
+                if iter == 2:
+                    e = Expeditor()
+                    exp = e.find(j)
+                    j = exp[0][1]
+                if iter == 3:
+                    time = QDateTime().fromTime_t(j).toString("dd.MM.yyyy h:mm")
+                    j = time
+                if iter == 7:
+                    if j != 0 and j != "None" and j != None:
+                        rw = "Путь №" + str(j)
+                        j = rw
+                    else:
+                        j = "В ожидании"
+
+                if iter != 6:
+                    self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                else:
+                    ch_b_w = QWidget()
+                    ch = QCheckBox(ch_b_w)
+                    if j == 1:
+                        ch.setCheckState(Qt.Checked)
+                    self.table.setCellWidget(row_num, col_num, ch_b_w)
+                col_num += 1
+                iter += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton("Удалить", w, s)
+            p.s.connect(self.delTrainPrepare)
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+
+        butt = QPushButton("Добавить состав")
+        butt.released.connect(self.openAddTrainForm)
+        self.layout.addWidget(butt)
+
+        self.workers_resource = 75
+        self.tech_resource = 30
+        resW = QWidget()
+        resW_l = QFormLayout()
+        resW.setLayout(resW_l)
+        resW_l.addWidget(QLabel('Свобоные ресурсы'))
+        txt = QLineEdit()
+        txt.setText(str(self.workers_resource))
+        txt.textChanged.connect(self.changedWorkers)
+        resW_l.addRow(QLabel("Люди"), txt)
+        txt = QLineEdit()
+        txt.setText(str(self.tech_resource))
+        txt.textChanged.connect(self.changedTech)
+        resW_l.addRow(QLabel("Техника"), txt)
+        self.layout.addWidget(resW)
+
+    def changedWorkers(self, text):
+        self.workers_resource = int(text)
+
+    def changedTech(self, text):
+        self.tech_resource = int(text)
+
+    def addExp(self, val):
+        self.ship_id = val
+        add_e_w = QWidget()
+        l = QFormLayout()
+        add_e_w.setLayout(l)
+        add_e_w.exp = QComboBox()
+        e = Expeditor()
+        ex = e.getAll()
+        for i in ex:
+            add_e_w.exp.addItem(i[1], i[0])
+
+        l.addRow(QLabel("Экспедитор"), add_e_w.exp)
+        add_e_w.cargo = QComboBox()
+        cargo = Cargo()
+        c = cargo.getAll()
+        for i in c:
+            add_e_w.cargo.addItem(i[1], i[0])
+        l.addRow(QLabel("Тип груза"), add_e_w.cargo)
+        add_e_w.amount = QLineEdit()
+        l.addRow(QLabel("Количество"), add_e_w.amount)
+        do_add = QPushButton("Добавить")
+        do_add.released.connect(self.doAddExpeditorShip)
+        l.addWidget(do_add)
+        self.addExpeditorShipForm = add_e_w
+        self.addExpeditorShipForm.show()
+
+    def doAddExpeditorShip(self):
+        s = Ship()
+        ship = s.find(self.ship_id)
+        exps = s.getExpeditors(self.ship_id)
+        total = 0
+        if exps != []:
+            for i in exps:
+                total += i[4]
+
+        total += int(self.addExpeditorShipForm.amount.text())
+        if total > ship[0][9]:
+            QMessageBox.about(self, 'Ошибка!', "Вы не можете добавить груз больше, чем дедвейт судна")
+            return False
+        s.addExpeditor(str(self.ship_id), str(self.addExpeditorShipForm.exp.currentData()),
+                       str(self.addExpeditorShipForm.cargo.currentData()), str(self.addExpeditorShipForm.amount.text()))
+        self.addExpeditorShipForm.close()
+        self.reload()
+
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+
+    def openAddTrainForm(self):
+        self.t = AddTrain(self)
+        self.t.show()
+
+    def reload(self):
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def delTrain(self, val):
+        if val == 1:
+            train = Train()
+            train.delete(self.delete_id)
+            qw = QWidget()
+            qw.setLayout(self.layout)
+            self.setMainUi()
+
+    def delTrainPrepare(self, val):
+        self.sup = SupportWindow('Удалить запись?', 1)
+        self.sup.show()
+        self.delete_id = val
+        self.sup.signal.connect(self.delTrain)
 
 class CranManagementForm(QWidget):
     signal = pyqtSignal(str)
@@ -1016,6 +1175,263 @@ class CranManagementForm(QWidget):
         qw = QWidget()
         qw.setLayout(self.layout)
         self.setMainUi()
+
+
+class AddTrain(QWidget):
+    mainWinSignal = pyqtSignal(str)
+
+    def __init__(self, parent):
+        super().__init__()
+        self.p = parent
+        self.setMainUi()
+
+        self.setWindowTitle("Добавление состава")
+        self.show()
+
+    def setMainUi(self):
+        la = QFormLayout()
+        self.l1 = QComboBox()
+        cargo = Cargo()
+        c = cargo.getAll()
+        for i in c:
+            self.l1.addItem(i[1], i[0])
+
+        self.l4 = QComboBox()
+        e = Expeditor()
+        exp = e.getAll()
+        for i in exp:
+            self.l4.addItem(i[1], i[0])
+        # l1 = QLineEdit()
+        self.l3 = QDateTimeEdit()
+        self.l3.setCalendarPopup(True)
+        self.calendL3 = QCalendarWidget()
+        self.l3.setCalendarWidget(self.calendL3)
+        self.l3.setDate(QDate().currentDate())
+        self.num = QLineEdit()
+        la.addRow(QLabel("№ состава"), self.num)
+        la.addRow(QLabel("Вид груза"), self.l1)
+
+        la.addRow(QLabel("Через сколько придет"), self.l3)
+        la.addRow(QLabel("Экспедитор"), self.l4)
+        self.l5 = QLineEdit()
+        self.l5.textEdited.connect(self.editCargoValue)
+        la.addRow(QLabel("Количество вагонов"), self.l5)
+        self.l2 = QLabel()
+        la.addRow(QLabel("Грузовая партия"), self.l2)
+        self.l6 = QCheckBox()
+        self.l6.stateChanged.connect(self.showShips)
+        la.addRow(QLabel("Только прямой путь(вагон-судно)"), self.l6)
+
+        ship_w = QWidget()
+        sh_la = QFormLayout()
+        ship_w.setLayout(sh_la)
+        self.l7 = QComboBox()
+        s = Ship()
+        ships = s.getAll()
+        self.l7.addItem("Выбор судна", None)
+        for i in ships:
+            self.l7.addItem(i[1], i[0])
+        sh_la.addRow(QLabel('Привязать судно'), self.l7)
+        ship_w.hide()
+        la.addRow(ship_w)
+        self.sh_la = sh_la
+        self.sh_w = ship_w
+
+        self.l8 = QCheckBox()
+        self.l8.stateChanged.connect(self.showRailways)
+        la.addRow(QLabel("Определить путь"), self.l8)
+        rw_w = QWidget()
+        rw_la = QFormLayout()
+        rw_w.setLayout(rw_la)
+        self.l9 = QComboBox()
+        self.l9.addItem("Выбор ж/д пути", None)
+        self.l9.addItem("Путь №1", 1)
+        self.l9.addItem("Путь №2", 2)
+        self.l9.addItem("Путь №3", 3)
+        self.l9.addItem("Путь №4", 4)
+        rw_la.addRow(QLabel('Путь'), self.l9)
+        rw_w.hide()
+        la.addRow(rw_w)
+        self.rw_la = rw_la
+        self.rw_w = rw_w
+
+        subm = QPushButton('Добавить')
+        subm.released.connect(self.addTrain)
+        la.addRow(None, subm)
+        self.la = la
+        self.setLayout(la)
+
+    def editCargoValue(self, val):
+        self.l2.setText(str(int(val) * 70))
+
+    def showShips(self):
+        ch = self.l6.checkState()
+        if ch == Qt.Unchecked:
+            self.sh_w.hide()
+        else:
+            self.sh_w.show()
+
+    def showRailways(self):
+        ch = self.l8.checkState()
+        if ch == Qt.Unchecked:
+            self.rw_w.hide()
+        else:
+            self.rw_w.show()
+
+    def getFreeRw(self, time, cargo, expeditor, direct):
+        rw = Railway()
+        tr_inst = Train()
+        ship_instance = Ship()
+        tmp_free_rw = 0
+        doc_inst = DocChar()
+        docs_ids = ''
+        docs = doc_inst.getBy('num', 'in', '(2,3,5,6)')
+        docs_by_ids = {}
+        for doc in docs:
+            docs_by_ids[doc[0]] = doc[1]
+            docs_ids += str(doc[0])
+            docs_ids += ', '
+
+        if direct == '1':
+            ship_id = self.l7.itemData(self.l7.currentIndex())
+            ship = ship_instance.find(ship_id)
+            if (int(time) + 86400) > int(ship[0][5]):
+                if int(docs_by_ids[ship[0][8]]) == 2 or int(docs_by_ids[ship[0][8]]) == 3:
+                    tmp_free_rw = 4
+                    trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                    if trains != []:
+                        for tr in trains:
+                            if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                                tmp_free_rw = 0
+
+                if int(docs_by_ids[ship[0][8]]) == 5 or int(docs_by_ids[ship[0][8]]) == 6:
+                    tmp_free_rw = 1
+                    trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                    if trains != []:
+                        for tr in trains:
+                            if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                                tmp_free_rw = 0
+
+                return tmp_free_rw
+
+        docs_ids = docs_ids[:-2]
+        ships = ship_instance.getBy('doc', 'in', ' (' + docs_ids + ') order by arrival_time asc')
+        if ships != []:
+            for ship in ships:
+                if tmp_free_rw != 0:
+                    break
+                exps = ship_instance.getExpeditors(ship[0])
+                if exps != []:
+                    for exp in exps:
+                        if (int(time) + 86400) > int(ship[5]) and int(exp[3]) == int(cargo) and int(exp[2]) == int(
+                                expeditor):
+                            if int(docs_by_ids[ship[8]]) == 2 or int(docs_by_ids[ship[8]]) == 3:
+                                tmp_free_rw = 4
+                                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                                if trains != []:
+                                    for tr in trains:
+                                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                                            tmp_free_rw = 0
+
+                            if int(docs_by_ids[ship[8]]) == 5 or int(docs_by_ids[ship[8]]) == 6:
+                                tmp_free_rw = 1
+                                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                                if trains != []:
+                                    for tr in trains:
+                                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                                            tmp_free_rw = 0
+                            break
+
+        if direct == '0':
+            if tmp_free_rw == 0:
+                tmp_free_rw = 2
+                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                if trains != []:
+                    for tr in trains:
+                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                            tmp_free_rw = 0
+
+            if tmp_free_rw == 0:
+                tmp_free_rw = 3
+                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                if trains != []:
+                    for tr in trains:
+                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                            tmp_free_rw = 0
+
+            if tmp_free_rw == 0:
+                tmp_free_rw = 4
+                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                if trains != []:
+                    for tr in trains:
+                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                            tmp_free_rw = 0
+
+            if tmp_free_rw == 0:
+                tmp_free_rw = 1
+                trains = tr_inst.getBy('railway', '=', str(tmp_free_rw))
+                if trains != []:
+                    for tr in trains:
+                        if int(time) > int(tr[3]) and int(time) < (int(tr[3]) + 5 * 86400):
+                            tmp_free_rw = 0
+
+        return tmp_free_rw
+
+    def addTrain(self):
+        error = False
+        error_text = ""
+        cargo = self.l1.itemData(self.l1.currentIndex())
+        amount = self.l2.text()
+        arrival_time = self.l3
+        expeditor = self.l4.itemData(self.l4.currentIndex())
+        ch = self.l6.checkState()
+        ch2 = self.l8.checkState()
+        ship_id = ""
+        if ch == Qt.Unchecked:
+            direct = "0"
+        else:
+            direct = "1"
+            ship_id = self.l7.itemData(self.l7.currentIndex())
+
+        # Для выполнения поиска пути для состава
+        railway = ""
+        if ch2 != Qt.Unchecked:
+            railway = self.l9.itemData(self.l9.currentIndex())
+        # free_rw = self.getFreeRw(arrival_time.dateTime().toTime_t(), cargo, expeditor, direct)
+        # railway = free_rw
+
+        if self.num.text() == "":
+            error = True
+            error_text = error_text + "Поле номер поезда не должно быть пустым\n"
+
+        try:
+            cargo = int(cargo)
+        except Exception:
+            error = True
+            error_text = error_text + "Ошибка в поле Тип груза\n"
+
+        try:
+            amount = int(amount)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Грузовая партия должно быть числовым\n"
+
+        if QDate.currentDate() > arrival_time.date():
+            error = True
+            error_text = error_text + "Дата прибытия не должнa быть меньше текущей\n"
+
+        # if railway == 0:
+        # QMessageBox.about(self, 'Внимание!',"Состав находится в ожидании")
+
+        if not error:
+            train = Train(0, str(cargo), str(amount), str(arrival_time.dateTime().toTime_t()), str(expeditor),
+                          self.l5.text(), direct, self.num.text(), str(railway), str(ship_id))
+
+            train.save()
+            self.p.reload()
+            self.close()
+        else:
+            QMessageBox.about(self, 'Ошибка!', error_text)
 
 
 class OtherEquipmentForm(QWidget):
