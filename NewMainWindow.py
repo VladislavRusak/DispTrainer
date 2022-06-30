@@ -146,7 +146,7 @@ class InfrastructureWindow(QWidget):
         self.layout.addWidget(back)
         b1.released.connect(self.openDocCharManagementForm)
         b2.released.connect(self.openStorageCapManagmentForm)
-        b3.released.connect(self.openTrainsForm)
+        # b3.released.connect(self.openTrainsForm)
         back.released.connect(self.GoBack)
 
     def openDocCharManagementForm(self):
@@ -159,7 +159,7 @@ class InfrastructureWindow(QWidget):
         self.storageF.show()
 
     def openTrainsForm(self):
-        self.trainF = TrainsForm()
+        # self.trainF = TrainsForm()
         self.trainF.show()
 
     def GoBack(self):
@@ -262,22 +262,23 @@ class VehicleWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-        # b1.released.connect(openShipsForm)
-        # b2.released.connect(openTrainsForm)
+        # b1.released.connect(self.openShipsForm)
+        b2.released.connect(self.openTrainsForm)
         back.released.connect(self.GoBack)
 
     # def openShipsForm(self):
     #     self.shipsF = ShipsForm()
     #     self.shipsF.show()
 
-    # def openTrainsForm(self):
-    #     self.trainsF = TrainsForm()
-    #     self.trainsF.show()
+    def openTrainsForm(self):
+        self.trainsF = TrainsForm()
+        self.trainsF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
 
 class CargoWindow(QWidget):
     signal = pyqtSignal(str)
@@ -994,7 +995,7 @@ class TrainsForm(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('ЖД пути')
+        self.setWindowTitle('ЖД составы')
         self.resize(600, 400)
         self.setMainUi()
 
