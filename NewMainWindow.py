@@ -262,13 +262,13 @@ class VehicleWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-        # b1.released.connect(self.openShipsForm)
+        b1.released.connect(self.openShipsForm)
         b2.released.connect(self.openTrainsForm)
         back.released.connect(self.GoBack)
 
-    # def openShipsForm(self):
-    #     self.shipsF = ShipsForm()
-    #     self.shipsF.show()
+    def openShipsForm(self):
+        self.shipsF = ShipsForm()
+        self.shipsF.show()
 
     def openTrainsForm(self):
         self.trainsF = TrainsForm()
@@ -1147,6 +1147,351 @@ class TrainsForm(QWidget):
         self.sup.show()
         self.delete_id = val
         self.sup.signal.connect(self.delTrain)
+
+
+class ShipsForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Суда")
+        self.resize(600, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        global METEO
+
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(13)
+        thead = ["Название судна", "дата и время подхода судна", "Дата отхода", "Длина", "Осадка", "Максимальный вес",
+                 "Экспедитор", "Вид груза", "Причал", "Грузовая партия", "Приоритетное судно", "Удаление судна",
+                 "Добавить экспедитора"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        ship = Ship()
+        # t.save()
+        ships = ship.getAll()
+        row_num = 0
+        for i in ships:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            iter = 0
+            for j in i:
+                if iter == 0 or iter == 7:
+                    iter += 1
+                    continue
+                if iter == 2:
+                    time = QDateTime().fromTime_t(j).toString("dd.MM.yyyy h:mm")
+                    j = time
+
+                if iter == 6:
+                    doc = ""
+                    if str(j) != "" and str(j) != "None":
+                        doc = "Причал №" + str(j)
+                    else:
+                        doc = "В ожидании"
+                    self.table.setItem(row_num, 8, QTableWidgetItem(doc))
+                else:
+                    self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                if iter == 2:
+                    col_num += 1
+                    self.table.setItem(row_num, col_num, QTableWidgetItem(""))
+
+                col_num += 1
+                iter += 1
+
+            s_e = ship.getExpeditors(str(i[0]))
+            if s_e != []:
+                w1 = QWidget()
+                l1 = QBoxLayout(QBoxLayout.TopToBottom)
+                w1.setLayout(l1)
+
+                w2 = QWidget()
+                l2 = QBoxLayout(QBoxLayout.TopToBottom)
+                w2.setLayout(l2)
+
+                w3 = QWidget()
+                l3 = QBoxLayout(QBoxLayout.TopToBottom)
+                w3.setLayout(l3)
+                for line in s_e:
+                    e = Expeditor()
+                    ex = e.find(line[2])
+                    l1.addWidget(QLabel(str(ex[0][1])))
+
+                    c = Cargo()
+                    ca = c.find(line[3])
+                    l2.addWidget(QLabel(str(ca[0][1])))
+
+                    l3.addWidget(QLabel(str(line[4])))
+
+                self.table.setCellWidget(row_num, 6, w1)
+                self.table.setCellWidget(row_num, 7, w2)
+                self.table.setCellWidget(row_num, 9, w3)
+
+            w = QWidget()
+            с = QCheckBox(w)
+            if str(i[7]) == "1":
+                c.setCheckState(Qt.Checked)
+            self.table.setCellWidget(row_num, 10, w)
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.delShipPrepare)
+            self.table.setCellWidget(row_num, 11, w)
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Добавить экспедитора', w, s)
+            p.s.connect(self.addExp)
+            self.table.setCellWidget(row_num, 12, w)
+
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        self.layout.addWidget(self.table)
+
+        but = QPushButton('Добавить судно')
+        but.released.connect(self.openAddShipForm)
+        self.layout.addWidget(but)
+
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+
+    def addExp(self, val):
+        self.ship_id = val
+        add_e_w = QWidget()
+        l = QFormLayout()
+        add_e_w.setLayout(l)
+        add_e_w.exp = QComboBox()
+        e = Expeditor()
+        ex = e.getAll()
+        for i in ex:
+            add_e_w.exp.addItem(i[1], i[0])
+
+        l.addRow(QLabel("Экспедитор"), add_e_w.exp)
+        add_e_w.cargo = QComboBox()
+        cargo = Cargo()
+        c = cargo.getAll()
+        for i in c:
+            add_e_w.cargo.addItem(i[1], i[0])
+        l.addRow(QLabel("Тип груза"), add_e_w.cargo)
+        add_e_w.amount = QLineEdit()
+        l.addRow(QLabel("Количество"), add_e_w.amount)
+        do_add = QPushButton("Добавить")
+        do_add.released.connect(self.doAddExpeditorShip)
+        l.addWidget(do_add)
+        self.addExpeditorShipForm = add_e_w
+        self.addExpeditorShipForm.show()
+
+    def doAddExpeditorShip(self):
+        s = Ship()
+        ship = s.find(self.ship_id)
+        exps = s.getExpeditors(self.ship_id)
+        total = 0
+        if exps != []:
+            for i in exps:
+                total += i[4]
+
+        total += int(self.addExpeditorShipForm.amount.text())
+        if total > ship[0][9]:
+            QMessageBox.about(self, 'Ошибка!', "Вы не можете добавить груз больше, чем дедвейт судна")
+            return False
+        s.addExpeditor(str(self.ship_id), str(self.addExpeditorShipForm.exp.currentData()),
+                       str(self.addExpeditorShipForm.cargo.currentData()), str(self.addExpeditorShipForm.amount.text()))
+        self.addExpeditorShipForm.close()
+        self.reload()
+
+    def openAddShipForm(self):
+        self.f = AddShip(self)
+        self.f.show()
+
+    def reload(self):
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def delShip(self, val):
+        if val == 1:
+            ship = Ship()
+            s = ship.find(self.delete_id)
+            d = DocChar()
+            d.unuseDoc(s[0][8])
+            exps = ship.getExpeditors(self.delete_id)
+            if exps != []:
+                for i in exps:
+                    ship.deleteExpeditor(str(i[0]))
+            ship.delete(self.delete_id)
+            qw = QWidget()
+            qw.setLayout(self.layout)
+            self.setMainUi()
+
+    def delShipPrepare(self, val):
+        self.sup = SupportWindow('Удалить запись?', 1)
+        self.sup.show()
+        self.delete_id = val
+        self.sup.signal.connect(self.delShip)
+
+
+class AddShip(QWidget):
+    mainWinSignal = pyqtSignal(str)
+
+    def __init__(self, parent):
+        super().__init__()
+        self.p = parent
+        self.setMainUi()
+
+        self.setWindowTitle("Добавление судна")
+        self.show()
+
+    def setMainUi(self):
+        la = QFormLayout()
+        self.l1 = QComboBox()
+        cargo = Cargo()
+        c = cargo.getAll()
+        if c != []:
+            for i in c:
+                self.l1.addItem(i[1], i[0])
+
+        self.typical = QComboBox()
+        ts = TypicalShip()
+        ships = ts.getAll()
+        self.typical.addItem("Выбрать", None)
+        if ships != []:
+            for s in ships:
+                self.typical.addItem(s[1], s[0])
+
+        self.typical.currentIndexChanged.connect(self.setTypical)
+        # l1 = QLineEdit()
+        self.l2 = QLineEdit()
+        self.l3 = QLineEdit()
+        self.l4 = QLineEdit()
+        self.max_weight = QLineEdit()
+        self.l5 = QDateTimeEdit()
+        self.l5.setCalendarPopup(True)
+        self.calendL5 = QCalendarWidget()
+        self.l5.setCalendarWidget(self.calendL5)
+        self.l5.setDate(QDate().currentDate())
+        # self.l6 = QComboBox()
+        # e = Expeditor()
+        # ex = e.getAll()
+        # for i in ex:
+        # self.l6.addItem(i[1], i[0])
+        # la.addRow(QLabel("Вид груза"), self.l1)
+        # la.addRow(QLabel("Вид груза"), self.l6)
+        # btn_add_exp = QPushButton("Добавить еще экспедитора")
+        # btn.released.connect(self.addExp)
+        # la.addWidget(btn_add_exp)
+        la.addRow(QLabel("Типовое судно"), self.typical)
+        la.addRow(QLabel("Название"), self.l2)
+        la.addRow(QLabel("длина"), self.l3)
+        la.addRow(QLabel("Осадка"), self.l4)
+        la.addRow(QLabel("Максимальный вес"), self.max_weight)
+        la.addRow(QLabel("Через сколько придет(ч)"), self.l5)
+
+        self.l6 = QCheckBox()
+        self.l6.stateChanged.connect(self.showDocs)
+        la.addRow(QLabel("Определить причал"), self.l6)
+        doc_w = QWidget()
+        d_la = QFormLayout()
+        doc_w.setLayout(d_la)
+        self.l7 = QComboBox()
+        self.l7.addItem("Выбор причала", None)
+        d = DocChar()
+        docs = d.getAll()
+        for i in docs:
+            self.l7.addItem(str(i[1]), i[0])
+        d_la.addRow(QLabel('Причал'), self.l7)
+        doc_w.hide()
+        la.addRow(doc_w)
+        self.d_la = d_la
+        self.doc_w = doc_w
+
+        self.l8 = QCheckBox()
+        la.addRow(QLabel("Приоритетное судно"), self.l8)
+        subm = QPushButton('Добавить')
+        subm.released.connect(self.addShip)
+        la.addRow(None, subm)
+        self.setLayout(la)
+
+    def showDocs(self):
+        ch = self.l6.checkState()
+        if ch == Qt.Unchecked:
+            self.doc_w.hide()
+        else:
+            self.doc_w.show()
+
+    def setTypical(self):
+        typical = TypicalShip()
+        ts = typical.find(self.typical.currentData())
+        self.l2.setText(str(ts[0][1]))
+        self.l3.setText(str(ts[0][3]))
+        self.l4.setText(str(ts[0][2]))
+        self.max_weight.setText(str(ts[0][4]))
+
+    def addShip(self):
+        error = False
+        error_text = ""
+        name = self.l2.text()
+        length = self.l3.text()
+        depth = self.l4.text()
+        arrival = self.l5
+        priority = "0"
+        ch_p = self.l8.checkState()
+        if ch_p != Qt.Unchecked:
+            priority = "1"
+
+        try:
+            length = float(length)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Длина должно быть числовым\n"
+
+        try:
+            depth = float(depth)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Осадка должно быть числовым\n"
+
+        if QDate.currentDate() > arrival.date():
+            error = True
+            error_text = error_text + "Дата прибытия не должнa быть меньше текущей\n"
+
+        doc_num = 0
+        ch = self.l6.checkState()
+        if ch != Qt.Unchecked:
+            doc_num = self.l7.itemData(self.l7.currentIndex())
+        # d = DocChar()
+        # docs = d.getAll()
+        # docn = ""
+        # for doc in docs:
+        # if docn != "":
+        # break
+        # if str(doc[4]) == "" or str(doc[4]) == "0" or str(doc[4]) == "Null" or doc[4] == None:
+        # if int(doc[2]) > int(length) and float(doc[3]) > float(depth):
+        # docn = doc[0]
+        # d.useDoc(str(doc[0]))
+        # else:
+        # continue
+        docn = ""
+        if doc_num != 0:
+            d = DocChar()
+            doc = d.find(doc_num)
+            docn = doc[0][1]
+
+        if not error:
+            ship = Ship(0, str(length), str(depth), str(self.max_weight.text()), str(arrival.dateTime().toTime_t()),
+                        str(name), str(docn), str(priority))
+            ship.save()
+            self.p.reload()
+            self.close()
+        else:
+            QMessageBox.about(self, 'Ошибка!', error_text)
 
 
 class CranManagementForm(QWidget):
