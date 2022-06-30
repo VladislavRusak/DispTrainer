@@ -154,7 +154,8 @@ class InfrastructureWindow(QWidget):
         self.docF.show()
 
     def openStorageCapManagmentForm(self):
-        self.storageF = StorageCapManagementForm()
+        self.storageF = StorageDefaultValuesForm()
+        # self.storageF = StorageCapManagementForm()
         self.storageF.show()
 
     def openTrainsForm(self):
@@ -565,6 +566,313 @@ class StorageManagementForm(QWidget):
     def closeEvent(self, evt):
         QWidget.closeEvent(self, evt)
         self.signal.emit("1")
+
+
+class StorageDefaultValuesForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setMainUi()
+        self.resize(700, 500)
+        self.setWindowTitle('Загруженность складов')
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(4)
+        storage = Storage()
+        # st_def_val = StorageDefVal()
+        thead = ["Название склада", "Обслуживаемый груз (UF)", "Процент загруженности склада", "Вместимость склада (W)",
+                 "Добавить экспедитора"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        # self.data = st_def_val.getAll()
+        self.data = storage.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            self.table.setItem(row_num, 0, QTableWidgetItem(str(i[1])))
+            wgt = QWidget()
+            l = QGridLayout()
+            wgt.setLayout(l)
+            exps = storage.getExpeditors(i[0])
+            pos = 0
+            if exps != []:
+                for ex in exps:
+                    e = Expeditor()
+                    expeditor = e.find(ex[1])
+                    cargo = Cargo()
+                    c = cargo.find(ex[3])
+
+                    s = str(ex[0])
+                    p = MyButton('Удалить', None, s)
+                    p.s.connect(self.delExpConfirm)
+
+                    l.addWidget(QLabel(str(expeditor[0][1])), pos, 0)
+                    l.addWidget(QLabel(str(c[0][1])), pos, 1)
+                    l.addWidget(QLabel(str(ex[4])), pos, 2)
+                    l.addWidget(p, pos, 3)
+
+                    pos += 1
+
+            self.table.setCellWidget(row_num, 1, wgt)
+
+            wgt = QWidget()
+            l = QGridLayout()
+            wgt.setLayout(l)
+
+            total_perc = 0
+
+            st_d_v = StorageDefVal()
+            default_values = st_d_v.getBy('storage', '=', str(i[0]))
+            pos = 0
+            if default_values != []:
+                for dv in default_values:
+                    cargo = Cargo()
+                    c = cargo.find(dv[2])
+
+                    l.addWidget(QLabel(str(c[0][1])), pos, 0)
+                    l.addWidget(QLabel(str(dv[4])), pos, 1)
+
+                    pos += 1
+
+                for r in exps:
+                    capW = 0
+                    for p in default_values:
+                        if int(r[3]) == int(p[2]):
+                            capW = p[4]
+
+                    v = str(capW)
+                    capW = float(v.replace(',', '.'))
+                    v = str(r[4])
+                    cap = float(v.replace(',', '.'))
+                    total_perc = total_perc + (cap * 100 / capW)
+
+            self.table.setItem(row_num, 2, QTableWidgetItem(str(total_perc) + "%"))
+            self.table.setCellWidget(row_num, 3, wgt)
+            self.table.item(row_num, 0).setFlags(Qt.NoItemFlags)
+
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Добавить экспедитора', w, s)
+            p.s.connect(self.addExpeditor)
+            self.table.setCellWidget(row_num, 3, w)
+            col_num += 1
+
+            # w = QWidget()
+            # s = str(i[0])
+            # p = MyButton('Удалить', w, s)
+            # p.s.connect(self.delConfirm)
+            # self.table.setCellWidget(row_num, col_num, w)
+
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.layout.addWidget(self.table)
+        add_b = QPushButton('Редактировать вместимость складов')
+        self.layout.addWidget(add_b)
+        add_b.released.connect(self.openStorageDefVal)
+        # w = QWidget()
+        # l = QHBoxLayout()
+        # w.setLayout(l)
+        # self.layout.addWidget(w)
+        # add_b = QPushButton('Добавить значение')
+        # self.storage = QComboBox()
+        # storage = Storage()
+        # c = storage.getAll()
+        # for i in c:
+        # self.storage.addItem(i[1], i[0])
+
+        # self.cargo = QComboBox()
+        # cargo = Cargo()
+        # c = cargo.getAll()
+        # for i in c:
+        # self.cargo.addItem(i[1], i[0])
+        # self.cargo.currentIndexChanged.connect(self.getStorageW)
+        # self.capW = QLineEdit()
+        # self.capW.setReadOnly(True)
+        # self.capUF = QLineEdit()
+        # l.addWidget(self.storage)
+        # l.addWidget(self.cargo)
+        # l.addWidget(self.capW)
+        # l.addWidget(self.capUF)
+        # l.addWidget(add_b)
+        # add_b.released.connect(self.addStorageDefVal)
+
+    def addExpeditor(self, val):
+        self.storage_id = val
+        add_e_w = QWidget()
+        l = QFormLayout()
+        add_e_w.setLayout(l)
+        add_e_w.exp = QComboBox()
+        e = Expeditor()
+        ex = e.getAll()
+        for i in ex:
+            add_e_w.exp.addItem(i[1], i[0])
+
+        l.addRow(QLabel("Экспедитор"), add_e_w.exp)
+        add_e_w.cargo = QComboBox()
+        cargo = Cargo()
+        c = cargo.getAll()
+        for i in c:
+            add_e_w.cargo.addItem(i[1], i[0])
+        add_e_w.cargo.currentIndexChanged.connect(self.changeCargoLeft)
+        l.addRow(QLabel("Тип груза"), add_e_w.cargo)
+        add_e_w.amount = QLineEdit()
+        l.addRow(QLabel("Количество"), add_e_w.amount)
+        add_e_w.cargoLeft = QLabel()
+        l.addRow(QLabel("Данного типа груза можно добавить еще(т)"), add_e_w.cargoLeft)
+        do_add = QPushButton("Добавить")
+        do_add.released.connect(self.doAddExpeditorStorage)
+        l.addWidget(do_add)
+
+        self.addExpeditorStorageForm = add_e_w
+        self.addExpeditorStorageForm.show()
+        self.changeCargoLeft()
+
+    def changeCargoLeft(self):
+        perc_left = 100 - self.getCapUFPerc(self.storage_id)
+        cargo = self.addExpeditorStorageForm.cargo.currentData()
+        sdv = StorageDefVal()
+        storage_params = sdv.getBy('storage', '=', str(self.storage_id))
+        capW = 0
+        for p in storage_params:
+            if int(cargo) == int(p[2]):
+                capW = p[4]
+
+        val = capW * perc_left / 100
+
+        self.addExpeditorStorageForm.cargoLeft.setText(str(val))
+
+    def getCapUFPerc(self, storage_id=None):
+        cg = Cargo()
+        c = cg.getAll()
+        s = Storage()
+        sdv = StorageDefVal()
+        total_perc = 0
+        storage_params = sdv.getBy('storage', '=', str(storage_id))
+        exps = s.getExpeditors(storage_id)
+        if exps != []:
+            for r in exps:
+                capW = 0
+                for p in storage_params:
+                    if int(r[3]) == int(p[2]):
+                        capW = p[4]
+
+                v = str(capW)
+                capW = float(v.replace(',', '.'))
+                v = str(r[4])
+                cap = float(v.replace(',', '.'))
+                total_perc = total_perc + (cap * 100 / capW)
+
+        return total_perc
+
+    def doAddExpeditorStorage(self):
+        cg = Cargo()
+        c = cg.getAll()
+        s = Storage()
+        sdv = StorageDefVal()
+        total_perc = 0
+        storage_params = sdv.getBy('storage', '=', str(self.storage_id))
+        exps = s.getExpeditors(self.storage_id)
+        if exps != []:
+            for r in exps:
+                capW = 0
+                for p in storage_params:
+                    if int(r[3]) == int(p[2]):
+                        capW = p[4]
+
+                v = str(capW)
+                capW = float(v.replace(',', '.'))
+                v = str(r[4])
+                cap = float(v.replace(',', '.'))
+                total_perc = total_perc + (cap * 100 / capW)
+
+        for p in storage_params:
+            if int(self.addExpeditorStorageForm.cargo.currentData()) == int(p[2]):
+                capW = p[4]
+        v = str(capW)
+        capW = float(v.replace(',', '.'))
+        total_perc = total_perc + (float(self.addExpeditorStorageForm.amount.text().replace(',', '.')) * 100 / capW)
+
+        if total_perc >= 100:
+            QMessageBox.about(self, 'Ошибка!', 'Склад переполнен, данные не внесены')
+            return False
+
+        s.addExpeditor(str(self.storage_id), str(self.addExpeditorStorageForm.exp.currentData()),
+                       str(self.addExpeditorStorageForm.cargo.currentData()),
+                       str(self.addExpeditorStorageForm.amount.text()))
+        self.addExpeditorStorageForm.close()
+        q = QWidget()
+        q.setLayout(self.layout)
+        self.setMainUi()
+
+    def delExpConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.deleteExpDo)
+
+    def deleteExpDo(self):
+        s = Storage()
+        s.deleteExpeditor(self.delete_id)
+        q = QWidget()
+        q.setLayout(self.layout)
+        self.setMainUi()
+
+    def openStorageDefVal(self):
+        self.op = StorageCapManagementForm()
+        self.op.show()
+        self.close()
+
+    def save_W(self, id, row, col):
+        row = int(row)
+        sdv = StorageDefVal()
+        sdv_row = sdv.find(id)
+        value = self.table.item(row, col).text()
+        if sdv_row != []:
+            StorageDef = StorageDefVal(str(sdv_row[0][0]), str(sdv_row[0][1]), str(sdv_row[0][2]), str(sdv_row[0][3]),
+                                       self.table.item(row, x).text())
+            StorageDef.save()
+        else:
+            self.sup = SupportWindow("Не удалось выбрать", 0)
+            self.sup.show()
+
+    def delConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.mk)
+
+    def getStorageW(self, index):
+        cargo = self.cargo.itemData(self.cargo.currentIndex())
+        storage = self.storage.itemData(self.storage.currentIndex())
+        st = StorageDefVal()
+        row = st.findBy({'storage': str(storage), 'cargo': str(cargo)})
+        print(row)
+
+    def addStorageDefVal(self):
+        st_def_val = StorageDefVal(0, str(self.storage.itemData(self.storage.currentIndex())),
+                                   str(self.cargo.itemData(self.cargo.currentIndex())), self.capW.text(),
+                                   self.capUF.text())
+        st_def_val.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        if val != 0:
+            st_def_val = StorageDefVal()
+            st_def_val.delete(self.delete_id)
+            qw = QWidget()
+            qw.setLayout(self.layout)
+            self.setMainUi()
 
 
 class StorageCapManagementForm(QWidget):
