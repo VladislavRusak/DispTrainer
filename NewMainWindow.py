@@ -220,23 +220,24 @@ class WorkersWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-    #     b1.released.connect(self.openQualificationsForm)
-    #     b2.released.connect(self.openWorkersForm)
+        b1.released.connect(self.openQualificationsForm)
+        b2.released.connect(self.openWorkersForm)
         back.released.connect(self.GoBack)
 
 
-    # def openQualificationsForm(self):
-    #     # self.qualificationF = QualificationsForm()
-    #     # self.qualificationF.show()
+    def openQualificationsForm(self):
+        self.qualificationF = QualificationsForm()
+        self.qualificationF.show()
 
-    # def openWorkersForm(self):
-    #     # self.workersF = WorkersForm()
-    #     # self.workersF.show()
+    def openWorkersForm(self):
+        self.workersF = WorkersForm()
+        self.workersF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
 
 class VehicleWindow(QWidget):
     signal = pyqtSignal(str)
@@ -273,6 +274,7 @@ class VehicleWindow(QWidget):
         self.Back = MainWindow()
         self.hide()
         self.Back.show()
+
 
 class CargoWindow(QWidget):
     signal = pyqtSignal(str)
@@ -314,6 +316,7 @@ class CargoWindow(QWidget):
         self.hide()
         self.Back.show()
 
+
 class CargoPartyWindow(QWidget):
     signal = pyqtSignal(str)
 
@@ -334,16 +337,16 @@ class CargoPartyWindow(QWidget):
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
         # b1.released.connect(self.openPartyType)
-        # b2.released.connect(self.openForwardersType)
+        b2.released.connect(self.openForwardersType)
         back.released.connect(self.GoBack)
 
 #    def openPartyType(self):
 #        self.type = название()
 #        self.type.show()
 #
-#    def openForwardersType(self):
-#        self.type = название()
-#        self.type.show()
+    def openForwardersType(self):
+        self.type = ForwardersForm()
+        self.type.show()
 
     def GoBack(self):
         self.Back = CargoWindow()
@@ -1079,6 +1082,199 @@ class OtherEquipmentForm(QWidget):
         self.setMainUi()
 
 
+class QualificationsForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Квалификации')
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        workskill = WorkSkill()
+        self.data = workskill.getAll()
+        row_num = -1
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.type = QLineEdit()
+        l.addWidget(self.type)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addCargo)
+
+    def addCargo(self):
+        if self.type.text() == '':
+            self.sup = SupportWindow('Заполните название', 0)
+            self.sup.show()
+            return False
+        workskill = WorkSkill(0, self.type.text())
+        workskill.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        workskill = WorkSkill()
+        workskill.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+"""
+class WorkersForm(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Рабочий персонал")
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(6)
+        doc_char = DocChar()
+        # t.save()
+        thead = ["id", "Имя", "Фамилия", "Профессия"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+        self.data = doc_char.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            iter = 0
+            for j in i:
+                if iter == 0:
+                    iter += 1
+                    continue
+
+                if iter == 4:
+                    if j == "" or j == "null" or j == "0" or j == None:
+                        self.table.setItem(row_num, col_num, QTableWidgetItem("Свободен"))
+                    else:
+                        self.table.setItem(row_num, col_num, QTableWidgetItem("Занят"))
+                else:
+                    self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+
+                iter += 1
+
+            w = QWidget()
+            s = str(i[0])
+            p = SaveRowButton('Сохранить', w, s, str(row_num), 0)
+            p.s.connect(self.saveRow)
+            self.table.setCellWidget(row_num, col_num, w)
+            col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.delDoc)
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QGridLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.name = QLineEdit()
+        self.surname = QLineEdit()
+        self.skill_id = QLineEdit()
+        l.addWidget(self.name, 1, 0)
+        l.addWidget(self.surname, 1, 1)
+        l.addWidget(self.skill_id, 1, 2)
+        l.addWidget(QLabel('Имя'), 0, 0)
+        l.addWidget(QLabel('Фамилия'), 0, 1)
+        l.addWidget(QLabel('Номер профессии'), 0, 2)
+        l.addWidget(add_b, 1, 3)
+        add_b.released.connect(self.addDocChar)
+
+    def saveRow(self, id, row, param):
+        row = int(row)
+        doc_char = DocChar()
+        doc_row = doc_char.find(id)
+        if doc_row != []:
+            Doc = DocChar(str(doc_row[0][0]), self.table.item(row, 0).text(), self.table.item(row, 1).text(),
+                          self.table.item(row, 2).text(), '')
+            Doc.save()
+        else:
+            self.sup = SupportWindow("Не удалось выбрать", 0)
+            self.sup.show()
+
+    def addDocChar(self):
+        error = False
+        error_text = ""
+        name = self.name.text()
+        surname = self.surname.text()
+        skill_id = self.skill_id.text()
+        try:
+            name = int(name)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Номер причала должно быть числовым\n"
+
+        try:
+            surname = int(surname)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Длина должно быть числовым\n"
+
+        try:
+            skill_id = float(skill_id)
+        except Exception:
+            error = True
+            error_text = error_text + "Поле Глубина должно быть числовым\n"
+
+        if not error:
+            doc_char = DocChar(None, str(name), str(surname), str(skill_id), '')
+            doc_char.save()
+            qw = QWidget()
+            qw.setLayout(self.layout)
+            self.setMainUi()
+        else:
+            QMessageBox.about(self, 'Ошибка!', error_text)
+
+    def delDoc(self, val):
+        self.sup = SupportWindow('Удалить причал?', 1)
+        self.sup.show()
+        self.delete_id = val
+        self.sup.signal.connect(self.mk)
+
+    def mk(self, val):
+        if val == 1:
+            doc_char = DocChar()
+            doc_char.delete(self.delete_id)
+            qw = QWidget()
+            qw.setLayout(self.layout)
+            self.setMainUi()
+"""
+
 class CargoTypeForm(QWidget):
     signal = pyqtSignal(str)
 
@@ -1140,7 +1336,78 @@ class CargoTypeForm(QWidget):
         self.setMainUi()
 
 
+class ForwardersForm(QWidget):
+    signal = pyqtSignal(str)
 
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Экспедиторы")
+        self.resize(400,400)
+        self.setMainUi()
+        
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        exp = Expeditor()
+        expeditors = exp.getAll()
+        self.layout.addWidget(QLabel('Экспедиторы'))
+        self.LEs = {}
+        for i in expeditors:
+            w = QWidget()
+            w.l = QBoxLayout(QBoxLayout.LeftToRight)
+            w.setLayout(w.l)
+            s = str(i[0])
+            p = MyButton('Сохранить', None, s)
+            p.s.connect(self.saveExpeditor)
+            self.LEs[str(i[0])] = QLineEdit(i[1])
+            w.l.addWidget(self.LEs[str(i[0])])
+            w.l.addWidget(p)
+            s = str(i[0])
+            p = MyButton('Удалить', None, s)
+            p.s.connect(self.delExpeditorConfirm)
+            w.l.addWidget(p)
+            self.layout.addWidget(w)
+            
+            
+        self.layout.addWidget(QLabel(''))
+        self.exp_name = QLineEdit()
+        add_exp_btn = QPushButton('Добавить')
+        add_exp_btn.released.connect(self.addExpeditor)
+        w = QWidget()
+        w.l = QBoxLayout(QBoxLayout.LeftToRight)
+        w.setLayout(w.l)
+        w.l.addWidget(self.exp_name)
+        w.l.addWidget(add_exp_btn)
+        self.layout.addWidget(w)
+        
+        return False
+
+    def saveExpeditor(self, val):
+        exp = Expeditor(val, self.LEs[val].text())
+        exp.save()
+        w = QWidget()
+        w.setLayout(self.layout)
+        self.setMainUi()
+
+    def addExpeditor(self):
+        exp = Expeditor(None, self.exp_name.text())
+        exp.save()
+        w = QWidget()
+        w.setLayout(self.layout)
+        self.setMainUi()
+        
+    def delExpeditorConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.delExpeditor)
+    
+    def delExpeditor(self):
+        exp = Expeditor()
+        exp.delete(self.delete_id)
+        w = QWidget()
+        w.setLayout(self.layout)
+        self.setMainUi()
 
 #########################################################
 #                                                       #

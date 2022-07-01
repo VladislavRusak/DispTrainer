@@ -75,6 +75,86 @@ class OtherEquipment():
         return res
 
 
+class WorkSkill():
+    def __init__(self, id=None, type=None):
+        self.id = id
+        self.name = type
+
+    def save(self):
+        c = db_connection.cursor()
+        c.execute("insert into work_skill (skill_name) VALUES('" + self.name + "')")
+        db_connection.commit()
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM work_skill WHERE skill_id = " + id + " ")
+        db_connection.commit()
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from work_skill where skill_id=:id", {"id": id})
+        res = c.fetchall()
+        return res
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT * from work_skill
+        """)
+        res = c.fetchall()
+        return res
+
+"""
+class Workers():
+    def __init__(self, id=None, name=None, surname=None, skill_id=None):
+        self.id = id
+        self.name = name
+        self.surname = surname
+        self.skill_id = skill_id
+
+    def save(self):
+        c = db_connection.cursor()
+        if self.id != None:
+            c.execute("UPDATE workers set name = '" + self.name + "' , surname = '" + self.surname + "' WHERE id = '" + self.id + "'")
+            c.execute("UPDATE workers_to_skills set skill_id = " + self.skill_id + "' WHERE worker_id = '" + self.id + "'")
+            db_connection.commit()
+        else:
+            c.execute("insert into workers (name,surname,skill_id) VALUES('" + self.name + "','" + self.surname + "','" + self.skill_id + "','')")
+            db_connection.commit()
+        return True
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from workers where id=:id", {"id": id})
+        res = c.fetchall()
+        return res
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM workers WHERE id = " + id + " ")
+        db_connection.commit()
+
+    def update(self, id, col, val):
+        c = db_connection.cursor()
+        c.execute("UPDATE workers set " + col + " = '" + val + "' WHERE id = '" + id + "'")
+        db_connection.commit()
+
+    def getBy(self, col, param, value):
+        c = db_connection.cursor()
+        c.execute("select * from workers where " + col + " " + param + ""  + value + " ")
+        res = c.fetchall()
+        return res
+
+    #def getAll(self):
+        #c = db_connection.cursor()
+        #c.execute("""
+        #SELECT * from workers
+        #""")
+        #res = c.fetchall()
+        #return res
+
+
+
 class TypicalShip():
     def __init__(self, id=None, type=None):
         self.id = id
