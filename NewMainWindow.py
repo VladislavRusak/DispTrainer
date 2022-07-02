@@ -340,16 +340,16 @@ class CargoPartyWindow(QWidget):
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
         # b1.released.connect(self.openPartyType)
-        # b2.released.connect(self.openForwardersType)
+        b2.released.connect(self.openExpeditorsForm)
         back.released.connect(self.GoBack)
 
 #    def openPartyType(self):
 #        self.type = название()
 #        self.type.show()
 #
-#    def openForwardersType(self):
-#        self.type = название()
-#        self.type.show()
+    def openExpeditorsForm(self):
+       self.expeditorF = ExpeditorManagementForm()
+       self.expeditorF.show()
 
     def GoBack(self):
         self.Back = CargoWindow()
@@ -2208,6 +2208,79 @@ class CargoTypeForm(QWidget):
         cargo.delete(val)
         qw = QWidget()
         qw.setLayout(self.layout)
+        self.setMainUi()
+
+
+class ExpeditorManagementForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Экспедиторы")
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        exp = Expeditor()
+        expeditors = exp.getAll()
+        self.layout.addWidget(QLabel('Экспедиторы'))
+        self.LEs = {}
+        for i in expeditors:
+            w = QWidget()
+            w.l = QBoxLayout(QBoxLayout.LeftToRight)
+            w.setLayout(w.l)
+            s = str(i[0])
+            p = MyButton('Сохранить', None, s)
+            p.s.connect(self.saveExpeditor)
+            self.LEs[str(i[0])] = QLineEdit(i[1])
+            w.l.addWidget(self.LEs[str(i[0])])
+            w.l.addWidget(p)
+            s = str(i[0])
+            p = MyButton('Удалить', None, s)
+            p.s.connect(self.delExpeditorConfirm)
+            w.l.addWidget(p)
+            self.layout.addWidget(w)
+
+        self.layout.addWidget(QLabel(''))
+        self.exp_name = QLineEdit()
+        add_exp_btn = QPushButton('Добавить')
+        add_exp_btn.released.connect(self.addExpeditor)
+        w = QWidget()
+        w.l = QBoxLayout(QBoxLayout.LeftToRight)
+        w.setLayout(w.l)
+        w.l.addWidget(self.exp_name)
+        w.l.addWidget(add_exp_btn)
+        self.layout.addWidget(w)
+
+        return False
+
+    def saveExpeditor(self, val):
+        exp = Expeditor(val, self.LEs[val].text())
+        exp.save()
+        w = QWidget()
+        w.setLayout(self.layout)
+        self.setMainUi()
+
+    def addExpeditor(self):
+        exp = Expeditor(None, self.exp_name.text())
+        exp.save()
+        w = QWidget()
+        w.setLayout(self.layout)
+        self.setMainUi()
+
+    def delExpeditorConfirm(self, val):
+        self.delete_id = val
+        self.sup = SupportWindow("Действительно хотите удалить?", 1)
+        self.sup.show()
+        self.sup.signal.connect(self.delExpeditor)
+
+    def delExpeditor(self):
+        exp = Expeditor()
+        exp.delete(self.delete_id)
+        w = QWidget()
+        w.setLayout(self.layout)
         self.setMainUi()
 
 
