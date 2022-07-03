@@ -138,7 +138,7 @@ class InfrastructureWindow(QWidget):
         self.setLayout(self.layout)
         b1 = QPushButton(' Причалы ')
         b2 = QPushButton(' Склады ')
-        b3 = QPushButton(' Ж/Д пути ')
+        b3 = QPushButton(' Ж/Д пути(краш) ')
         back = QPushButton(' << Назад ')
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
@@ -146,7 +146,7 @@ class InfrastructureWindow(QWidget):
         self.layout.addWidget(back)
         b1.released.connect(self.openDocCharManagementForm)
         b2.released.connect(self.openStorageCapManagmentForm)
-        # b3.released.connect(self.openTrainsForm)
+        b3.released.connect(self.openRailwaysForm)
         back.released.connect(self.GoBack)
 
     def openDocCharManagementForm(self):
@@ -158,8 +158,8 @@ class InfrastructureWindow(QWidget):
         # self.storageF = StorageCapManagementForm()
         self.storageF.show()
 
-    def openTrainsForm(self):
-        # self.trainF = TrainsForm()
+    def openRailwaysForm(self):
+        self.trainF = RailwaysForm()
         self.trainF.show()
 
     def GoBack(self):
@@ -225,18 +225,17 @@ class WorkersWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-    #     b1.released.connect(self.openQualificationsForm)
-    #     b2.released.connect(self.openWorkersForm)
+        b1.released.connect(self.openQualificationsForm)
+        b2.released.connect(self.openWorkersForm)
         back.released.connect(self.GoBack)
 
+    def openQualificationsForm(self):
+        self.qualificationF = QualificationsForm()
+        self.qualificationF.show()
 
-    # def openQualificationsForm(self):
-        # self.qualificationF = QualificationsForm()
-        # self.qualificationF.show()
-
-    # def openWorkersForm(self):
-    #     # self.workersF = WorkersForm()
-    #     # self.workersF.show()
+    def openWorkersForm(self):
+        self.workersF = WorkersForm()
+        self.workersF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
@@ -301,19 +300,23 @@ class CargoWindow(QWidget):
         self.layout.addWidget(b2)
         self.layout.addWidget(b3)
         self.layout.addWidget(back)
-        b1.released.connect(self.openCargoPartyType)
+        b1.released.connect(self.openCargoParty)
         b2.released.connect(self.openCargoType)
-        # b3.released.connect()
+        b3.released.connect(self.openStorageMethods)
         back.released.connect(self.GoBack)
 
-    def openCargoPartyType(self):
-        self.type = CargoPartyWindow()
-        self.type.show()
+    def openCargoParty(self):
+        self.partyF = CargoPartyWindow()
+        self.partyF.show()
         self.hide()
 
     def openCargoType(self):
         self.type = CargoTypeForm()
         self.type.show()
+
+    def openStorageMethods(self):
+        self.methodF = StorageMethods()
+        self.methodF.show()
 
     def GoBack(self):
         self.Back = MainWindow()
@@ -339,14 +342,14 @@ class CargoPartyWindow(QWidget):
         self.layout.addWidget(b1)
         self.layout.addWidget(b2)
         self.layout.addWidget(back)
-        # b1.released.connect(self.openPartyType)
+        b1.released.connect(self.openParty)
         b2.released.connect(self.openExpeditorsForm)
         back.released.connect(self.GoBack)
 
-#    def openPartyType(self):
-#        self.type = название()
-#        self.type.show()
-#
+    def openParty(self):
+       self.type = PartyForm()
+       self.type.show()
+
     def openExpeditorsForm(self):
        self.expeditorF = ExpeditorManagementForm()
        self.expeditorF.show()
@@ -989,6 +992,53 @@ class StorageCapManagementForm(QWidget):
         else:
             QWidget.closeEvent(self, evt)
 
+
+class RailwaysForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('ЖД-пути')
+        self.resize(600, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(6)
+        thead = ['ID', 'Номер', 'Используется', 'Время начала работ']
+        col_num = 0
+        for val in thead:
+            self.table.setItem(1, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        railway = Railway()
+        railway.getAll()
+        row_num = 0
+        for i in railway:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            self.table.setItem(row_num, col_num, QTableWidgetItem(str(i)))
+            col_num = 0
+            iter = 0
+            for j in i:
+                # if iter == 0:
+                #     id = railway.getBy(0, i, 1)
+                #     j = id
+                # if iter == 1:
+                #     n =
+                #
+                if iter == 2:
+                    used = railway.getUnused()
+                    j = used
+                if iter == 3:
+                    time = QDateTime().fromTime_t(j).toString("dd.MM.yyyy h:mm")
+                    j = time
+
+
+        self.layout.addWidget(self.table)
 
 class TrainsForm(QWidget):
     signal = pyqtSignal(str)
@@ -2284,6 +2334,88 @@ class ExpeditorManagementForm(QWidget):
         self.setMainUi()
 
 
+class QualificationsForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Квалификации')
+        self.resize(400, 600)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        # qualification = Qualifications()
+        # self.data = qualification.getAll()
+
+        self.layout.addWidget(self.table)
+
+
+class WorkersForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Работники')
+        self.resize(400, 600)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        # workers = Workers()
+        # self.data = workers.getAll()
+
+        self.layout.addWidget(self.table)
+
+
+class PartyForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Партии')
+        self.resize(400, 600)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        # workers = Workers()
+        # self.data = workers.getAll()
+
+        self.layout.addWidget(self.table)
+
+
+class StorageMethods(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Способы хранения')
+        self.resize(400, 600)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(3)
+        # workers = Workers()
+        # self.data = workers.getAll()
+
+        self.layout.addWidget(self.table)
 
 
 #########################################################
