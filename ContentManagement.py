@@ -683,7 +683,7 @@ class Expeditor():
         return res
 
 
-class Railway:
+class Railway():
     def __init__(self, id=None, num=None, is_used=None, time_start_usage=None):
         self.id = id
         self.num = num
@@ -768,6 +768,35 @@ class CranService():
         return res
 
 
+class Workers():
+    def __init__(self, id=None, name=None, surname=None):
+        self.id = id
+        self.name = name
+        self.surname = surname
+
+    def save(self):
+        c = db_connection.cursor()
+        c.execute("insert into workers (name,surname) VALUES('" + self.name + "', '" + self.surname + "')")
+        db_connection.commit()
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM workers WHERE id = " + id + " ")
+        db_connection.commit()
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from workers where id=:id", {"id": id})
+        res = c.fetchall()
+        return res
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT * from workers
+        """)
+        res = c.fetchall()
+        return res
 
 
 class Main():

@@ -999,7 +999,7 @@ class RailwaysForm(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('ЖД-пути')
-        self.resize(600, 400)
+        self.resize(400, 400)
         self.setMainUi()
 
     def setMainUi(self):
@@ -1007,38 +1007,44 @@ class RailwaysForm(QWidget):
         self.setLayout(self.layout)
         self.table = QTableWidget()
         self.table.setRowCount(1)
-        self.table.setColumnCount(6)
-        thead = ['ID', 'Номер', 'Используется', 'Время начала работ']
+        self.table.setColumnCount(4)
+        thead = ['ID', 'Номер', 'Статус', 'Время начала работ']
         col_num = 0
+        row_num = 0
         for val in thead:
-            self.table.setItem(1, col_num, QTableWidgetItem(str(val)))
+            self.table.setItem(row_num, col_num, QTableWidgetItem(str(val)))
             col_num += 1
 
         railway = Railway()
-        railway.getAll()
+        self.data = railway.getAll()
         row_num = 0
-        for i in railway:
+        for i in self.data:
             row_num += 1
             self.table.setRowCount((row_num + 1))
-            self.table.setItem(row_num, col_num, QTableWidgetItem(str(i)))
             col_num = 0
-            iter = 0
             for j in i:
-                # if iter == 0:
-                #     id = railway.getBy(0, i, 1)
-                #     j = id
-                # if iter == 1:
-                #     n =
-                #
-                if iter == 2:
-                    used = railway.getUnused()
-                    j = used
-                if iter == 3:
-                    time = QDateTime().fromTime_t(j).toString("dd.MM.yyyy h:mm")
-                    j = time
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
 
+            # row_num += 1
+            # self.table.setRowCount((row_num + 1))
+            # self.table.setItem(row_num, col_num, QTableWidgetItem(str(i)))
+            # col_num = 0
+            # iter = 0
+            # for j in i:
+            #     if iter == 2:
+            #         if j == "" or j == "null" or j == "0" or j == None:
+            #             self.table.setItem(row_num, col_num, QTableWidgetItem("Свободен"))
+            #         else:
+            #             self.table.setItem(row_num, col_num, QTableWidgetItem("Занят"))
+            #     else:
+            #         self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+            #     if iter == 3:
+            #         j = QDateTime().fromTime_t(j).toString("dd.MM.yyyy h:mm")
+            #         self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
 
         self.layout.addWidget(self.table)
+
 
 class TrainsForm(QWidget):
     signal = pyqtSignal(str)
@@ -2361,7 +2367,7 @@ class WorkersForm(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Работники')
-        self.resize(400, 600)
+        self.resize(400, 400)
         self.setMainUi()
 
     def setMainUi(self):
@@ -2369,11 +2375,60 @@ class WorkersForm(QWidget):
         self.setLayout(self.layout)
         self.table = QTableWidget()
         self.table.setRowCount(1)
-        self.table.setColumnCount(3)
-        # workers = Workers()
-        # self.data = workers.getAll()
+        self.table.setColumnCount(4)
+        thead = ['id', 'Имя', 'Фамилия', 'Профиль']
+        col_num = 0
+        row_num = 0
+        for val in thead:
+            self.table.setItem(row_num, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+
+        workers = Workers()
+        self.data = workers.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
 
         self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.name = QLineEdit()
+        self.surname = QLineEdit()
+        l.addWidget(self.name)
+        l.addWidget(self.surname)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addWorker)
+
+    def addWorker(self):
+        if self.name.text() == '' or self.surname.text() == '':
+            self.sup = SupportWindow('Заполните название', 0)
+            self.sup.show()
+            return False
+        workers = Workers(0, self.name.text(), self.surname.text())
+        workers.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        workers = Workers()
+        workers.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
 
 
 class PartyForm(QWidget):
