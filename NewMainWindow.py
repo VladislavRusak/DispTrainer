@@ -230,7 +230,7 @@ class WorkersWindow(QWidget):
         back.released.connect(self.GoBack)
 
     def openQualificationsForm(self):
-        self.qualificationF = QualificationsForm()
+        self.qualificationF = WorkSkillForm()
         self.qualificationF.show()
 
     def openWorkersForm(self):
@@ -315,7 +315,7 @@ class CargoWindow(QWidget):
         self.type.show()
 
     def openStorageMethods(self):
-        self.methodF = StorageMethods()
+        self.methodF = StorageMethodsForm()
         self.methodF.show()
 
     def GoBack(self):
@@ -1024,6 +1024,12 @@ class RailwaysForm(QWidget):
             col_num = 0
             for j in i:
                 self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                if col_num == 2:
+                    if j == "" or j == "null" or j == "0" or j == None:
+                        self.table.setItem(row_num, col_num, QTableWidgetItem("Свободен"))
+                    else:
+                        self.table.setItem(row_num, col_num, QTableWidgetItem("Занят"))
+
                 col_num += 1
 
             # row_num += 1
@@ -1782,16 +1788,16 @@ class CranManagementForm(QWidget):
         w.val4 = QLineEdit()
         w.val4.setText(str(c[0][4]))
         w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (уголь)'), w.val4)
-        w.val5 = QLineEdit()
-        w.val5.setText(str(c[0][5]))
-        w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (Чугун, брикеты)'), w.val5)
-        w.val6 = QLineEdit()
-        w.val6.setText(str(c[0][6]))
-        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (уголь)'), w.val6)
-        w.val7 = QLineEdit()
-        w.val7.setText(str(c[0][7]))
-        w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (Чугун, брикеты)'),
-                   w.val7)
+        # w.val5 = QLineEdit()
+        # w.val5.setText(str(c[0][5]))
+        # w.l.addRow(QLabel('Производительность при работе с подвозом груза т/смена (Чугун, брикеты)'), w.val5)
+        # w.val6 = QLineEdit()
+        # w.val6.setText(str(c[0][6]))
+        # w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (уголь)'), w.val6)
+        # w.val7 = QLineEdit()
+        # w.val7.setText(str(c[0][7]))
+        # w.l.addRow(QLabel('Производительность при работе с ж/д составом вагон/смена и т/смена (Чугун, брикеты)'),
+        #            w.val7)
         btn = QPushButton('Сохранить')
         btn.released.connect(self.editCranTypeDo)
         w.l.addWidget(btn)
@@ -2376,7 +2382,7 @@ class WorkersForm(QWidget):
         self.table = QTableWidget()
         self.table.setRowCount(1)
         self.table.setColumnCount(4)
-        thead = ['id', 'Имя', 'Фамилия', 'Профиль']
+        thead = ['ID', 'Имя', 'Фамилия', 'Профиль']
         col_num = 0
         row_num = 0
         for val in thead:
@@ -2431,13 +2437,58 @@ class WorkersForm(QWidget):
         self.setMainUi()
 
 
+class WorkSkillForm(QWidget):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Квалификации')
+        self.resize(400, 400)
+        self.setMainUi()
+
+    def setMainUi(self):
+        self.layout = QBoxLayout(QBoxLayout.TopToBottom)
+        self.setLayout(self.layout)
+        self.table = QTableWidget()
+        self.table.setRowCount(1)
+        self.table.setColumnCount(2)
+        workskill = WorkSkill()
+        thead = ["id квалификации", "Название"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+        self.data = workskill.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            self.table.setCellWidget(row_num, col_num, w)
+
+        self.layout.addWidget(self.table)
+
+
+    def mk(self, val):
+        workskill = WorkSkill()
+        workskill.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+
 class PartyForm(QWidget):
     signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Партии')
-        self.resize(400, 600)
+        self.setWindowTitle('Партия')
+        self.resize(400, 400)
         self.setMainUi()
 
     def setMainUi(self):
@@ -2445,20 +2496,81 @@ class PartyForm(QWidget):
         self.setLayout(self.layout)
         self.table = QTableWidget()
         self.table.setRowCount(1)
-        self.table.setColumnCount(3)
-        # workers = Workers()
-        # self.data = workers.getAll()
+        self.table.setColumnCount(8)
+        cargoparty = CargoParty()
+        thead = ["ID партии", "Тип поставки", "Масса", "Время прибытия", "ID причала", "Время отправки", "Владелец"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+        self.data = cargoparty.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
 
         self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QGridLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить')
+        self.party_weight = QLineEdit()
+        self.party_time_in = QLineEdit()
+        self.party_time_in.setInputMask('99.9D.D9 99:99')
+        self.warehouse_id = QLineEdit()
+        self.party_time_out = QLineEdit()
+        self.party_time_out.setInputMask('99.9D.D9 99:99')
+        self.owner_name = QLineEdit()
+        l.addWidget(self.party_weight, 1, 1)
+        l.addWidget(self.party_time_in, 1, 2)
+        l.addWidget(self.warehouse_id, 1, 3)
+        l.addWidget(self.party_time_out, 1, 4)
+        l.addWidget(self.owner_name, 1, 5)
+        l.addWidget(QLabel('Масса'), 0, 1)
+        l.addWidget(QLabel('Время поставки'), 0, 2)
+        l.addWidget(QLabel('id порта'), 0, 3)
+        l.addWidget(QLabel('Время отправки'), 0, 4)
+        l.addWidget(QLabel('Имя владельца'), 0, 5)
+        l.addWidget(add_b, 1, 6)
+        add_b.released.connect(self.addCargoParty)
+
+    def addCargoParty(self):
+        if self.cargo_type_id.text() == '' or self.party_weight.text() == '' or self.party_time_in.text() == '' or self.warehouse_id.text() == '' or self.party_time_out.text() == '' or self.owner_name.text() == '':
+            self.sup = SupportWindow('Заполните все значения', 0)
+            self.sup.show()
+            return False
+        cargoparty = CargoParty(0, self.cargo_type_id.text(), self.party_weight.text(), self.party_time_in.text(),
+                                self.warehouse_id.text(), self.party_time_out.text(), self.owner_name.text())
+        cargoparty.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        cargoparty = CargoParty()
+        cargoparty.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
 
 
-class StorageMethods(QWidget):
+class StorageMethodsForm(QWidget):
     signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Способы хранения')
-        self.resize(400, 600)
+        self.resize(400, 400)
         self.setMainUi()
 
     def setMainUi(self):
@@ -2467,10 +2579,55 @@ class StorageMethods(QWidget):
         self.table = QTableWidget()
         self.table.setRowCount(1)
         self.table.setColumnCount(3)
-        # workers = Workers()
-        # self.data = workers.getAll()
+        storagemethods = StorageMethods()
+        thead = ["id способа", "Способ хранения"]
+        col_num = 0
+        for val in thead:
+            self.table.setItem(0, col_num, QTableWidgetItem(str(val)))
+            col_num += 1
+        self.data = storagemethods.getAll()
+        row_num = 0
+        for i in self.data:
+            row_num += 1
+            self.table.setRowCount((row_num + 1))
+            col_num = 0
+            for j in i:
+                self.table.setItem(row_num, col_num, QTableWidgetItem(str(j)))
+                col_num += 1
+            w = QWidget()
+            s = str(i[0])
+            p = MyButton('Удалить', w, s)
+            p.s.connect(self.mk)
+            self.table.setCellWidget(row_num, col_num, w)
 
         self.layout.addWidget(self.table)
+        w = QWidget()
+        l = QHBoxLayout()
+        w.setLayout(l)
+        self.layout.addWidget(w)
+        add_b = QPushButton('Добавить значение')
+        self.type = QLineEdit()
+        l.addWidget(self.type)
+        l.addWidget(add_b)
+        add_b.released.connect(self.addStorageMethods)
+
+    def addStorageMethods(self):
+        if self.type.text() == '':
+            self.sup = SupportWindow('Заполните название', 0)
+            self.sup.show()
+            return False
+        storagemethods = StorageMethods(0, self.type.text())
+        storagemethods.save()
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
+
+    def mk(self, val):
+        storagemethods = StorageMethods()
+        storagemethods.delete(val)
+        qw = QWidget()
+        qw.setLayout(self.layout)
+        self.setMainUi()
 
 
 #########################################################

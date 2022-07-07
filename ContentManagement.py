@@ -799,6 +799,88 @@ class Workers():
         return res
 
 
+class WorkSkill():
+    def __init__(self, id=None, type=None):
+        self.id = id
+        self.name = type
+
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT * from work_skill
+        """)
+        res = c.fetchall()
+        return res
+
+
+class CargoParty():
+    def __init__(self, party_id=None, cargo_type_id=None, party_weight=None, party_time_in=None, warehouse_id=None, party_time_out=None, owner_name=None):
+        self.id = party_id
+        self.type = cargo_type_id
+        self.weight = party_weight
+        self.time_in = party_time_in
+        self.time_out = party_time_out
+        self.warehouse = warehouse_id
+        self.owner = owner_name
+
+
+    def save(self):
+        c = db_connection.cursor()
+        c.execute("insert into cargo_party (cargo_type_id,party_weight,party_time_in,warehouse_id,party_time_out,owner_name) VALUES('" + self.type + "', '" + self.weight + "', '" + self.time_in + "', '" + self.time_out + "', '" + self.warehouse + "', '" + self.owner + "')")
+        db_connection.commit()
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM cargo_party WHERE party_id = " + id + " ")
+        db_connection.commit()
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from cargo_party where party_id=:id", {"party_id": id})
+        res = c.fetchall()
+        return res
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT party_id,cargo_type,party_weight,party_time_in,warehouse_id,party_time_out,owner_name from cargo_party,cargo_types where cargo_type_id=id
+        """)
+        res = c.fetchall()
+        return res
+
+
+class StorageMethods():
+    def __init__(self, id=None, type=None):
+        self.id = id
+        self.type = type
+
+    def save(self):
+        c = db_connection.cursor()
+        c.execute("insert into cargo_storage_method (storage_method) VALUES('" + self.type + "')")
+        db_connection.commit()
+
+    def delete(self, id):
+        c = db_connection.cursor()
+        c.execute("DELETE FROM cargo_storage_method WHERE storage_method_id = " + id + " ")
+        db_connection.commit()
+
+    def find(self, id):
+        c = db_connection.cursor()
+        c.execute("select * from cargo_storage_method where storage_method_id=:id", {"id": id})
+        res = c.fetchall()
+        return res
+
+    def getAll(self):
+        c = db_connection.cursor()
+        c.execute("""
+        SELECT * from cargo_storage_method
+        """)
+        res = c.fetchall()
+        return res
+
+
+
 class Main():
     def __init__(self, workers = None, tech = None, METEO = None):
         self.meteo = METEO
