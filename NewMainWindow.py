@@ -1622,6 +1622,7 @@ class CranManagementForm(QWidget):
                     p.s.connect(self.delObjectConfirm)
                     cor_l.addRow(QLabel(name), p)
 
+
             # row_w_l.addWidget(cor_3_wgt)
             cor_3_wgt.resize(100, 100)
             self.table.setCellWidget(row_num, 2, cor_3_wgt)
